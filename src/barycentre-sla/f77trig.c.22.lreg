@@ -1,0 +1,528 @@
+
+;; Function sind_
+
+
+
+Pass 0
+
+  Register 58 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:0 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:0 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:62000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:15000
+  Register 59 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:-1000 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:25000 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:62000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:15000
+  Register 60 costs: AREG:0 DREG:0 CREG:0 SIREG:0 DIREG:0 AD_REGS:0 Q_REGS:0 NON_Q_REGS:0 INDEX_REGS:0 LEGACY_REGS:0 GENERAL_REGS:0 SSE_REGS:34000 MMX_REGS:34000 FP_TOP_SSE_REGS:34000 FP_SECOND_SSE_REGS:34000 FLOAT_SSE_REGS:34000 FLOAT_INT_REGS:18000 INT_SSE_REGS:34000 FLOAT_INT_SSE_REGS:34000 ALL_REGS:34000 MEM:8000
+  Register 61 costs: AREG:0 DREG:0 CREG:0 SIREG:0 DIREG:0 AD_REGS:0 Q_REGS:0 NON_Q_REGS:0 INDEX_REGS:0 LEGACY_REGS:0 GENERAL_REGS:0 SSE_REGS:34000 MMX_REGS:34000 FP_TOP_SSE_REGS:34000 FP_SECOND_SSE_REGS:34000 FLOAT_SSE_REGS:34000 FLOAT_INT_REGS:18000 INT_SSE_REGS:34000 FLOAT_INT_SSE_REGS:34000 ALL_REGS:34000 MEM:8000
+  Register 62 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:0 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:0 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:62000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:16000
+  Register 63 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:-1000 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:25000 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:66000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:15000
+
+  Register 53 pref FLOAT_INT_SSE_REGS or none
+  Register 54 pref FLOAT_INT_SSE_REGS or none
+  Register 55 pref FLOAT_INT_SSE_REGS or none
+  Register 56 pref FLOAT_INT_SSE_REGS or none
+  Register 57 pref FLOAT_INT_SSE_REGS or none
+  Register 58 pref FLOAT_SSE_REGS or none
+  Register 59 pref FP_TOP_REG, else FLOAT_REGS
+  Register 60 pref GENERAL_REGS or none
+  Register 61 pref GENERAL_REGS or none
+  Register 62 pref FLOAT_SSE_REGS or none
+  Register 63 pref FP_TOP_REG, else FLOAT_REGS
+  Register 64 pref FLOAT_INT_SSE_REGS or none
+65 registers.
+
+Register 58 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; FLOAT_SSE_REGS or none.
+
+Register 59 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; pref FP_TOP_REG, else FLOAT_REGS.
+
+Register 60 used 2 times across 2 insns in block 0; set 1 time; GENERAL_REGS or none.
+
+Register 61 used 2 times across 2 insns in block 0; set 1 time; GENERAL_REGS or none.
+
+Register 62 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; FLOAT_SSE_REGS or none.
+
+Register 63 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; pref FP_TOP_REG, else FLOAT_REGS.
+
+1 basic blocks, 2 edges.
+
+Basic block 0 prev -1, next -2, loop_depth 0, count 0, freq 0.
+Predecessors:  ENTRY (fallthru)
+Successors:  EXIT [100.0%]  (fallthru)
+Registers live at start: 3 [bx] 6 [bp] 7 [sp] 16 [argp] 20 [frame]
+Registers live at end: 3 [bx] 6 [bp] 7 [sp] 8 [st] 16 [argp] 20 [frame]
+
+;; Register 58 in 21.
+;; Register 59 in 8.
+;; Register 60 in 0.
+;; Register 61 in 0.
+;; Register 62 in 21.
+;; Register 63 in 8.
+(note 2 0 9 NOTE_INSN_DELETED)
+
+;; Start of basic block 0, registers live: 3 [bx] 6 [bp] 7 [sp] 16 [argp] 20 [frame]
+(note 9 2 3 0 [bb 0] NOTE_INSN_BASIC_BLOCK)
+
+(insn 3 9 4 0 (set (reg:SI 60 [ x ])
+        (mem/i:SI (reg/f:SI 16 argp) [0 x+0 S4 A32])) 41 {*movsi_1} (nil)
+    (nil))
+
+(insn 4 3 5 0 (set (mem/i:SI (plus:SI (reg/f:SI 20 frame)
+                (const_int -8 [0xfffffffffffffff8])) [0 x+0 S4 A64])
+        (reg:SI 60 [ x ])) 41 {*movsi_1} (nil)
+    (expr_list:REG_DEAD (reg:SI 60 [ x ])
+        (nil)))
+
+(insn 5 4 6 0 (set (reg:SI 61 [ x+4 ])
+        (mem/i:SI (plus:SI (reg/f:SI 16 argp)
+                (const_int 4 [0x4])) [0 x+4 S4 A32])) 41 {*movsi_1} (nil)
+    (nil))
+
+(insn 6 5 7 0 (set (mem/i:SI (plus:SI (reg/f:SI 20 frame)
+                (const_int -4 [0xfffffffffffffffc])) [0 x+4 S4 A32])
+        (reg:SI 61 [ x+4 ])) 41 {*movsi_1} (nil)
+    (expr_list:REG_DEAD (reg:SI 61 [ x+4 ])
+        (nil)))
+
+(note 7 6 12 0 NOTE_INSN_FUNCTION_BEG)
+
+(insn 12 7 13 0 (set (reg:DF 62 [ x ])
+        (mem/i:DF (plus:SI (reg/f:SI 20 frame)
+                (const_int -8 [0xfffffffffffffff8])) [0 x+0 S8 A64])) 94 {*movdf_nointeger} (nil)
+    (nil))
+
+(insn 13 12 14 0 (set (mem:DF (reg/f:SI 7 sp) [0 S8 A32])
+        (reg:DF 62 [ x ])) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 62 [ x ])
+        (insn_list:REG_LIBCALL 15 (nil))))
+
+(call_insn/u 14 13 15 0 (set (reg:DF 8 st)
+        (call (mem/u/c:QI (symbol_ref:SI ("&L_sin$stub") <function_decl 4163aa00 sin>) [0 S1 A8])
+            (const_int 16 [0x10]))) 691 {*call_value_0} (nil)
+    (expr_list:REG_EH_REGION (const_int -1 [0xffffffffffffffff])
+        (nil))
+    (expr_list:REG_DEP_TRUE (use (mem:BLK (scratch) [0 A8]))
+        (nil)))
+
+(insn 15 14 16 0 (set (reg:DF 63)
+        (reg:DF 8 st)) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 8 st)
+        (insn_list:REG_RETVAL 13 (expr_list:REG_EQUAL (expr_list:REG_DEP_TRUE (use (mem:BLK (scratch) [0 A8]))
+                    (expr_list:REG_DEP_TRUE (symbol_ref:SI ("sin") [flags 0x41] <function_decl 4163aa00 sin>)
+                        (expr_list:REG_DEP_TRUE (mem/i:DF (plus:SI (reg/f:SI 20 frame)
+                                    (const_int -8 [0xfffffffffffffff8])) [0 x+0 S8 A64])
+                            (nil))))
+                (nil)))))
+
+(insn 16 15 17 0 (set (reg:DF 58 [ D.2066 ])
+        (reg:DF 63)) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 63)
+        (nil)))
+
+(insn 17 16 20 0 (set (reg:DF 59 [ <result> ])
+        (reg:DF 58 [ D.2066 ])) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 58 [ D.2066 ])
+        (nil)))
+
+(note 20 17 23 0 NOTE_INSN_FUNCTION_END)
+
+(insn 23 20 29 0 (set (reg/i:DF 8 st [ <result> ])
+        (reg:DF 59 [ <result> ])) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 59 [ <result> ])
+        (nil)))
+
+(insn 29 23 0 0 (use (reg/i:DF 8 st [ <result> ])) -1 (nil)
+    (nil))
+;; End of basic block 0, registers live:
+ 3 [bx] 6 [bp] 7 [sp] 8 [st] 16 [argp] 20 [frame]
+
+
+;; Function cosd_
+
+
+
+Pass 0
+
+  Register 58 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:0 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:0 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:62000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:15000
+  Register 59 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:-1000 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:25000 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:62000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:15000
+  Register 60 costs: AREG:0 DREG:0 CREG:0 SIREG:0 DIREG:0 AD_REGS:0 Q_REGS:0 NON_Q_REGS:0 INDEX_REGS:0 LEGACY_REGS:0 GENERAL_REGS:0 SSE_REGS:34000 MMX_REGS:34000 FP_TOP_SSE_REGS:34000 FP_SECOND_SSE_REGS:34000 FLOAT_SSE_REGS:34000 FLOAT_INT_REGS:18000 INT_SSE_REGS:34000 FLOAT_INT_SSE_REGS:34000 ALL_REGS:34000 MEM:8000
+  Register 61 costs: AREG:0 DREG:0 CREG:0 SIREG:0 DIREG:0 AD_REGS:0 Q_REGS:0 NON_Q_REGS:0 INDEX_REGS:0 LEGACY_REGS:0 GENERAL_REGS:0 SSE_REGS:34000 MMX_REGS:34000 FP_TOP_SSE_REGS:34000 FP_SECOND_SSE_REGS:34000 FLOAT_SSE_REGS:34000 FLOAT_INT_REGS:18000 INT_SSE_REGS:34000 FLOAT_INT_SSE_REGS:34000 ALL_REGS:34000 MEM:8000
+  Register 62 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:0 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:0 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:62000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:16000
+  Register 63 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:-1000 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:25000 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:66000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:15000
+
+  Register 53 pref FLOAT_INT_SSE_REGS or none
+  Register 54 pref FLOAT_INT_SSE_REGS or none
+  Register 55 pref FLOAT_INT_SSE_REGS or none
+  Register 56 pref FLOAT_INT_SSE_REGS or none
+  Register 57 pref FLOAT_INT_SSE_REGS or none
+  Register 58 pref FLOAT_SSE_REGS or none
+  Register 59 pref FP_TOP_REG, else FLOAT_REGS
+  Register 60 pref GENERAL_REGS or none
+  Register 61 pref GENERAL_REGS or none
+  Register 62 pref FLOAT_SSE_REGS or none
+  Register 63 pref FP_TOP_REG, else FLOAT_REGS
+  Register 64 pref FLOAT_INT_SSE_REGS or none
+65 registers.
+
+Register 58 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; FLOAT_SSE_REGS or none.
+
+Register 59 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; pref FP_TOP_REG, else FLOAT_REGS.
+
+Register 60 used 2 times across 2 insns in block 0; set 1 time; GENERAL_REGS or none.
+
+Register 61 used 2 times across 2 insns in block 0; set 1 time; GENERAL_REGS or none.
+
+Register 62 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; FLOAT_SSE_REGS or none.
+
+Register 63 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; pref FP_TOP_REG, else FLOAT_REGS.
+
+1 basic blocks, 2 edges.
+
+Basic block 0 prev -1, next -2, loop_depth 0, count 0, freq 0.
+Predecessors:  ENTRY (fallthru)
+Successors:  EXIT [100.0%]  (fallthru)
+Registers live at start: 3 [bx] 6 [bp] 7 [sp] 16 [argp] 20 [frame]
+Registers live at end: 3 [bx] 6 [bp] 7 [sp] 8 [st] 16 [argp] 20 [frame]
+
+;; Register 58 in 21.
+;; Register 59 in 8.
+;; Register 60 in 0.
+;; Register 61 in 0.
+;; Register 62 in 21.
+;; Register 63 in 8.
+(note 2 0 9 NOTE_INSN_DELETED)
+
+;; Start of basic block 0, registers live: 3 [bx] 6 [bp] 7 [sp] 16 [argp] 20 [frame]
+(note 9 2 3 0 [bb 0] NOTE_INSN_BASIC_BLOCK)
+
+(insn 3 9 4 0 (set (reg:SI 60 [ x ])
+        (mem/i:SI (reg/f:SI 16 argp) [0 x+0 S4 A32])) 41 {*movsi_1} (nil)
+    (nil))
+
+(insn 4 3 5 0 (set (mem/i:SI (plus:SI (reg/f:SI 20 frame)
+                (const_int -8 [0xfffffffffffffff8])) [0 x+0 S4 A64])
+        (reg:SI 60 [ x ])) 41 {*movsi_1} (nil)
+    (expr_list:REG_DEAD (reg:SI 60 [ x ])
+        (nil)))
+
+(insn 5 4 6 0 (set (reg:SI 61 [ x+4 ])
+        (mem/i:SI (plus:SI (reg/f:SI 16 argp)
+                (const_int 4 [0x4])) [0 x+4 S4 A32])) 41 {*movsi_1} (nil)
+    (nil))
+
+(insn 6 5 7 0 (set (mem/i:SI (plus:SI (reg/f:SI 20 frame)
+                (const_int -4 [0xfffffffffffffffc])) [0 x+4 S4 A32])
+        (reg:SI 61 [ x+4 ])) 41 {*movsi_1} (nil)
+    (expr_list:REG_DEAD (reg:SI 61 [ x+4 ])
+        (nil)))
+
+(note 7 6 12 0 NOTE_INSN_FUNCTION_BEG)
+
+(insn 12 7 13 0 (set (reg:DF 62 [ x ])
+        (mem/i:DF (plus:SI (reg/f:SI 20 frame)
+                (const_int -8 [0xfffffffffffffff8])) [0 x+0 S8 A64])) 94 {*movdf_nointeger} (nil)
+    (nil))
+
+(insn 13 12 14 0 (set (mem:DF (reg/f:SI 7 sp) [0 S8 A32])
+        (reg:DF 62 [ x ])) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 62 [ x ])
+        (insn_list:REG_LIBCALL 15 (nil))))
+
+(call_insn/u 14 13 15 0 (set (reg:DF 8 st)
+        (call (mem/u/c:QI (symbol_ref:SI ("&L_cos$stub") <function_decl 41623c80 cos>) [0 S1 A8])
+            (const_int 16 [0x10]))) 691 {*call_value_0} (nil)
+    (expr_list:REG_EH_REGION (const_int -1 [0xffffffffffffffff])
+        (nil))
+    (expr_list:REG_DEP_TRUE (use (mem:BLK (scratch) [0 A8]))
+        (nil)))
+
+(insn 15 14 16 0 (set (reg:DF 63)
+        (reg:DF 8 st)) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 8 st)
+        (insn_list:REG_RETVAL 13 (expr_list:REG_EQUAL (expr_list:REG_DEP_TRUE (use (mem:BLK (scratch) [0 A8]))
+                    (expr_list:REG_DEP_TRUE (symbol_ref:SI ("cos") [flags 0x41] <function_decl 41623c80 cos>)
+                        (expr_list:REG_DEP_TRUE (mem/i:DF (plus:SI (reg/f:SI 20 frame)
+                                    (const_int -8 [0xfffffffffffffff8])) [0 x+0 S8 A64])
+                            (nil))))
+                (nil)))))
+
+(insn 16 15 17 0 (set (reg:DF 58 [ D.2071 ])
+        (reg:DF 63)) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 63)
+        (nil)))
+
+(insn 17 16 20 0 (set (reg:DF 59 [ <result> ])
+        (reg:DF 58 [ D.2071 ])) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 58 [ D.2071 ])
+        (nil)))
+
+(note 20 17 23 0 NOTE_INSN_FUNCTION_END)
+
+(insn 23 20 29 0 (set (reg/i:DF 8 st [ <result> ])
+        (reg:DF 59 [ <result> ])) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 59 [ <result> ])
+        (nil)))
+
+(insn 29 23 0 0 (use (reg/i:DF 8 st [ <result> ])) -1 (nil)
+    (nil))
+;; End of basic block 0, registers live:
+ 3 [bx] 6 [bp] 7 [sp] 8 [st] 16 [argp] 20 [frame]
+
+
+;; Function atand_
+
+
+
+Pass 0
+
+  Register 58 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:0 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:0 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:62000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:15000
+  Register 59 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:-1000 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:25000 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:62000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:15000
+  Register 60 costs: AREG:0 DREG:0 CREG:0 SIREG:0 DIREG:0 AD_REGS:0 Q_REGS:0 NON_Q_REGS:0 INDEX_REGS:0 LEGACY_REGS:0 GENERAL_REGS:0 SSE_REGS:34000 MMX_REGS:34000 FP_TOP_SSE_REGS:34000 FP_SECOND_SSE_REGS:34000 FLOAT_SSE_REGS:34000 FLOAT_INT_REGS:18000 INT_SSE_REGS:34000 FLOAT_INT_SSE_REGS:34000 ALL_REGS:34000 MEM:8000
+  Register 61 costs: AREG:0 DREG:0 CREG:0 SIREG:0 DIREG:0 AD_REGS:0 Q_REGS:0 NON_Q_REGS:0 INDEX_REGS:0 LEGACY_REGS:0 GENERAL_REGS:0 SSE_REGS:34000 MMX_REGS:34000 FP_TOP_SSE_REGS:34000 FP_SECOND_SSE_REGS:34000 FLOAT_SSE_REGS:34000 FLOAT_INT_REGS:18000 INT_SSE_REGS:34000 FLOAT_INT_SSE_REGS:34000 ALL_REGS:34000 MEM:8000
+  Register 62 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:0 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:0 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:62000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:16000
+  Register 63 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:-1000 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:25000 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:66000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:15000
+
+  Register 53 pref FLOAT_INT_SSE_REGS or none
+  Register 54 pref FLOAT_INT_SSE_REGS or none
+  Register 55 pref FLOAT_INT_SSE_REGS or none
+  Register 56 pref FLOAT_INT_SSE_REGS or none
+  Register 57 pref FLOAT_INT_SSE_REGS or none
+  Register 58 pref FLOAT_SSE_REGS or none
+  Register 59 pref FP_TOP_REG, else FLOAT_REGS
+  Register 60 pref GENERAL_REGS or none
+  Register 61 pref GENERAL_REGS or none
+  Register 62 pref FLOAT_SSE_REGS or none
+  Register 63 pref FP_TOP_REG, else FLOAT_REGS
+  Register 64 pref FLOAT_INT_SSE_REGS or none
+65 registers.
+
+Register 58 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; FLOAT_SSE_REGS or none.
+
+Register 59 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; pref FP_TOP_REG, else FLOAT_REGS.
+
+Register 60 used 2 times across 2 insns in block 0; set 1 time; GENERAL_REGS or none.
+
+Register 61 used 2 times across 2 insns in block 0; set 1 time; GENERAL_REGS or none.
+
+Register 62 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; FLOAT_SSE_REGS or none.
+
+Register 63 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; pref FP_TOP_REG, else FLOAT_REGS.
+
+1 basic blocks, 2 edges.
+
+Basic block 0 prev -1, next -2, loop_depth 0, count 0, freq 0.
+Predecessors:  ENTRY (fallthru)
+Successors:  EXIT [100.0%]  (fallthru)
+Registers live at start: 3 [bx] 6 [bp] 7 [sp] 16 [argp] 20 [frame]
+Registers live at end: 3 [bx] 6 [bp] 7 [sp] 8 [st] 16 [argp] 20 [frame]
+
+;; Register 58 in 21.
+;; Register 59 in 8.
+;; Register 60 in 0.
+;; Register 61 in 0.
+;; Register 62 in 21.
+;; Register 63 in 8.
+(note 2 0 9 NOTE_INSN_DELETED)
+
+;; Start of basic block 0, registers live: 3 [bx] 6 [bp] 7 [sp] 16 [argp] 20 [frame]
+(note 9 2 3 0 [bb 0] NOTE_INSN_BASIC_BLOCK)
+
+(insn 3 9 4 0 (set (reg:SI 60 [ x ])
+        (mem/i:SI (reg/f:SI 16 argp) [0 x+0 S4 A32])) 41 {*movsi_1} (nil)
+    (nil))
+
+(insn 4 3 5 0 (set (mem/i:SI (plus:SI (reg/f:SI 20 frame)
+                (const_int -8 [0xfffffffffffffff8])) [0 x+0 S4 A64])
+        (reg:SI 60 [ x ])) 41 {*movsi_1} (nil)
+    (expr_list:REG_DEAD (reg:SI 60 [ x ])
+        (nil)))
+
+(insn 5 4 6 0 (set (reg:SI 61 [ x+4 ])
+        (mem/i:SI (plus:SI (reg/f:SI 16 argp)
+                (const_int 4 [0x4])) [0 x+4 S4 A32])) 41 {*movsi_1} (nil)
+    (nil))
+
+(insn 6 5 7 0 (set (mem/i:SI (plus:SI (reg/f:SI 20 frame)
+                (const_int -4 [0xfffffffffffffffc])) [0 x+4 S4 A32])
+        (reg:SI 61 [ x+4 ])) 41 {*movsi_1} (nil)
+    (expr_list:REG_DEAD (reg:SI 61 [ x+4 ])
+        (nil)))
+
+(note 7 6 12 0 NOTE_INSN_FUNCTION_BEG)
+
+(insn 12 7 13 0 (set (reg:DF 62 [ x ])
+        (mem/i:DF (plus:SI (reg/f:SI 20 frame)
+                (const_int -8 [0xfffffffffffffff8])) [0 x+0 S8 A64])) 94 {*movdf_nointeger} (nil)
+    (nil))
+
+(insn 13 12 14 0 (set (mem:DF (reg/f:SI 7 sp) [0 S8 A32])
+        (reg:DF 62 [ x ])) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 62 [ x ])
+        (insn_list:REG_LIBCALL 15 (nil))))
+
+(call_insn/u 14 13 15 0 (set (reg:DF 8 st)
+        (call (mem/u/c:QI (symbol_ref:SI ("&L_atan$stub") <function_decl 41621a80 atan>) [0 S1 A8])
+            (const_int 16 [0x10]))) 691 {*call_value_0} (nil)
+    (expr_list:REG_EH_REGION (const_int -1 [0xffffffffffffffff])
+        (nil))
+    (expr_list:REG_DEP_TRUE (use (mem:BLK (scratch) [0 A8]))
+        (nil)))
+
+(insn 15 14 16 0 (set (reg:DF 63)
+        (reg:DF 8 st)) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 8 st)
+        (insn_list:REG_RETVAL 13 (expr_list:REG_EQUAL (expr_list:REG_DEP_TRUE (use (mem:BLK (scratch) [0 A8]))
+                    (expr_list:REG_DEP_TRUE (symbol_ref:SI ("atan") [flags 0x41] <function_decl 41621a80 atan>)
+                        (expr_list:REG_DEP_TRUE (mem/i:DF (plus:SI (reg/f:SI 20 frame)
+                                    (const_int -8 [0xfffffffffffffff8])) [0 x+0 S8 A64])
+                            (nil))))
+                (nil)))))
+
+(insn 16 15 17 0 (set (reg:DF 58 [ D.2076 ])
+        (reg:DF 63)) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 63)
+        (nil)))
+
+(insn 17 16 20 0 (set (reg:DF 59 [ <result> ])
+        (reg:DF 58 [ D.2076 ])) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 58 [ D.2076 ])
+        (nil)))
+
+(note 20 17 23 0 NOTE_INSN_FUNCTION_END)
+
+(insn 23 20 29 0 (set (reg/i:DF 8 st [ <result> ])
+        (reg:DF 59 [ <result> ])) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 59 [ <result> ])
+        (nil)))
+
+(insn 29 23 0 0 (use (reg/i:DF 8 st [ <result> ])) -1 (nil)
+    (nil))
+;; End of basic block 0, registers live:
+ 3 [bx] 6 [bp] 7 [sp] 8 [st] 16 [argp] 20 [frame]
+
+
+;; Function tand_
+
+
+
+Pass 0
+
+  Register 58 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:0 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:0 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:62000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:15000
+  Register 59 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:-1000 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:25000 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:62000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:15000
+  Register 60 costs: AREG:0 DREG:0 CREG:0 SIREG:0 DIREG:0 AD_REGS:0 Q_REGS:0 NON_Q_REGS:0 INDEX_REGS:0 LEGACY_REGS:0 GENERAL_REGS:0 SSE_REGS:34000 MMX_REGS:34000 FP_TOP_SSE_REGS:34000 FP_SECOND_SSE_REGS:34000 FLOAT_SSE_REGS:34000 FLOAT_INT_REGS:18000 INT_SSE_REGS:34000 FLOAT_INT_SSE_REGS:34000 ALL_REGS:34000 MEM:8000
+  Register 61 costs: AREG:0 DREG:0 CREG:0 SIREG:0 DIREG:0 AD_REGS:0 Q_REGS:0 NON_Q_REGS:0 INDEX_REGS:0 LEGACY_REGS:0 GENERAL_REGS:0 SSE_REGS:34000 MMX_REGS:34000 FP_TOP_SSE_REGS:34000 FP_SECOND_SSE_REGS:34000 FLOAT_SSE_REGS:34000 FLOAT_INT_REGS:18000 INT_SSE_REGS:34000 FLOAT_INT_SSE_REGS:34000 ALL_REGS:34000 MEM:8000
+  Register 62 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:0 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:0 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:62000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:16000
+  Register 63 costs: AD_REGS:62000 Q_REGS:62000 NON_Q_REGS:62000 INDEX_REGS:62000 LEGACY_REGS:62000 GENERAL_REGS:62000 FP_TOP_REG:-1000 FP_SECOND_REG:0 FLOAT_REGS:0 SSE_REGS:25000 FP_TOP_SSE_REGS:50000 FP_SECOND_SSE_REGS:50000 FLOAT_SSE_REGS:50000 FLOAT_INT_REGS:62000 INT_SSE_REGS:66000 FLOAT_INT_SSE_REGS:66000 ALL_REGS:66000 MEM:15000
+
+  Register 53 pref FLOAT_INT_SSE_REGS or none
+  Register 54 pref FLOAT_INT_SSE_REGS or none
+  Register 55 pref FLOAT_INT_SSE_REGS or none
+  Register 56 pref FLOAT_INT_SSE_REGS or none
+  Register 57 pref FLOAT_INT_SSE_REGS or none
+  Register 58 pref FLOAT_SSE_REGS or none
+  Register 59 pref FP_TOP_REG, else FLOAT_REGS
+  Register 60 pref GENERAL_REGS or none
+  Register 61 pref GENERAL_REGS or none
+  Register 62 pref FLOAT_SSE_REGS or none
+  Register 63 pref FP_TOP_REG, else FLOAT_REGS
+  Register 64 pref FLOAT_INT_SSE_REGS or none
+65 registers.
+
+Register 58 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; FLOAT_SSE_REGS or none.
+
+Register 59 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; pref FP_TOP_REG, else FLOAT_REGS.
+
+Register 60 used 2 times across 2 insns in block 0; set 1 time; GENERAL_REGS or none.
+
+Register 61 used 2 times across 2 insns in block 0; set 1 time; GENERAL_REGS or none.
+
+Register 62 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; FLOAT_SSE_REGS or none.
+
+Register 63 used 2 times across 2 insns in block 0; set 1 time; 8 bytes; pref FP_TOP_REG, else FLOAT_REGS.
+
+1 basic blocks, 2 edges.
+
+Basic block 0 prev -1, next -2, loop_depth 0, count 0, freq 0.
+Predecessors:  ENTRY (fallthru)
+Successors:  EXIT [100.0%]  (fallthru)
+Registers live at start: 3 [bx] 6 [bp] 7 [sp] 16 [argp] 20 [frame]
+Registers live at end: 3 [bx] 6 [bp] 7 [sp] 8 [st] 16 [argp] 20 [frame]
+
+;; Register 58 in 21.
+;; Register 59 in 8.
+;; Register 60 in 0.
+;; Register 61 in 0.
+;; Register 62 in 21.
+;; Register 63 in 8.
+(note 2 0 9 NOTE_INSN_DELETED)
+
+;; Start of basic block 0, registers live: 3 [bx] 6 [bp] 7 [sp] 16 [argp] 20 [frame]
+(note 9 2 3 0 [bb 0] NOTE_INSN_BASIC_BLOCK)
+
+(insn 3 9 4 0 (set (reg:SI 60 [ x ])
+        (mem/i:SI (reg/f:SI 16 argp) [0 x+0 S4 A32])) 41 {*movsi_1} (nil)
+    (nil))
+
+(insn 4 3 5 0 (set (mem/i:SI (plus:SI (reg/f:SI 20 frame)
+                (const_int -8 [0xfffffffffffffff8])) [0 x+0 S4 A64])
+        (reg:SI 60 [ x ])) 41 {*movsi_1} (nil)
+    (expr_list:REG_DEAD (reg:SI 60 [ x ])
+        (nil)))
+
+(insn 5 4 6 0 (set (reg:SI 61 [ x+4 ])
+        (mem/i:SI (plus:SI (reg/f:SI 16 argp)
+                (const_int 4 [0x4])) [0 x+4 S4 A32])) 41 {*movsi_1} (nil)
+    (nil))
+
+(insn 6 5 7 0 (set (mem/i:SI (plus:SI (reg/f:SI 20 frame)
+                (const_int -4 [0xfffffffffffffffc])) [0 x+4 S4 A32])
+        (reg:SI 61 [ x+4 ])) 41 {*movsi_1} (nil)
+    (expr_list:REG_DEAD (reg:SI 61 [ x+4 ])
+        (nil)))
+
+(note 7 6 12 0 NOTE_INSN_FUNCTION_BEG)
+
+(insn 12 7 13 0 (set (reg:DF 62 [ x ])
+        (mem/i:DF (plus:SI (reg/f:SI 20 frame)
+                (const_int -8 [0xfffffffffffffff8])) [0 x+0 S8 A64])) 94 {*movdf_nointeger} (nil)
+    (nil))
+
+(insn 13 12 14 0 (set (mem:DF (reg/f:SI 7 sp) [0 S8 A32])
+        (reg:DF 62 [ x ])) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 62 [ x ])
+        (insn_list:REG_LIBCALL 15 (nil))))
+
+(call_insn/u 14 13 15 0 (set (reg:DF 8 st)
+        (call (mem/u/c:QI (symbol_ref:SI ("&L_tan$stub") <function_decl 4163d600 tan>) [0 S1 A8])
+            (const_int 16 [0x10]))) 691 {*call_value_0} (nil)
+    (expr_list:REG_EH_REGION (const_int -1 [0xffffffffffffffff])
+        (nil))
+    (expr_list:REG_DEP_TRUE (use (mem:BLK (scratch) [0 A8]))
+        (nil)))
+
+(insn 15 14 16 0 (set (reg:DF 63)
+        (reg:DF 8 st)) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 8 st)
+        (insn_list:REG_RETVAL 13 (expr_list:REG_EQUAL (expr_list:REG_DEP_TRUE (use (mem:BLK (scratch) [0 A8]))
+                    (expr_list:REG_DEP_TRUE (symbol_ref:SI ("tan") [flags 0x41] <function_decl 4163d600 tan>)
+                        (expr_list:REG_DEP_TRUE (mem/i:DF (plus:SI (reg/f:SI 20 frame)
+                                    (const_int -8 [0xfffffffffffffff8])) [0 x+0 S8 A64])
+                            (nil))))
+                (nil)))))
+
+(insn 16 15 17 0 (set (reg:DF 58 [ D.2081 ])
+        (reg:DF 63)) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 63)
+        (nil)))
+
+(insn 17 16 20 0 (set (reg:DF 59 [ <result> ])
+        (reg:DF 58 [ D.2081 ])) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 58 [ D.2081 ])
+        (nil)))
+
+(note 20 17 23 0 NOTE_INSN_FUNCTION_END)
+
+(insn 23 20 29 0 (set (reg/i:DF 8 st [ <result> ])
+        (reg:DF 59 [ <result> ])) 94 {*movdf_nointeger} (nil)
+    (expr_list:REG_DEAD (reg:DF 59 [ <result> ])
+        (nil)))
+
+(insn 29 23 0 0 (use (reg/i:DF 8 st [ <result> ])) -1 (nil)
+    (nil))
+;; End of basic block 0, registers live:
+ 3 [bx] 6 [bp] 7 [sp] 8 [st] 16 [argp] 20 [frame]
+
