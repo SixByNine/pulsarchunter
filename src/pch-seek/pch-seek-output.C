@@ -200,7 +200,7 @@ void pch_seek_write_prd(char* filename, float** freq, float** spec, float** reco
 			} else {
 				fprintf(file,"% 8.1f",spec[ifold][indexes[ifold][icand]]);
 				if(recon!=NULL)fprintf(file,"% 8.1f",recon[ifold][indexes[ifold][icand]]);
-				fprintf(file,"% 13.8f",1000.0/freq[ifold][indexes[ifold][icand]]);
+				fprintf(file,"% 14.8f",1000.0/freq[ifold][indexes[ifold][icand]]);
 			}
 		}
 		fprintf(file,"\n");

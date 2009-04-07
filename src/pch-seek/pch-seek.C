@@ -107,6 +107,10 @@ int main(int argc, char** argv){
 				strcpy(operations.prdfile,optarg);
 				break;
 
+			case 0x00000201: //seach-chans
+				operations.search_chans=1;
+				break;
+
 			default:
 				opt_flag = 0;
 				switch (c) {
@@ -373,6 +377,11 @@ int set_options(struct option* long_opt, int* opt_flag){
 	long_opt[long_opt_idx].flag = NULL;
 	long_opt[long_opt_idx++].val = 'G';
 
+
+	long_opt[long_opt_idx].name = "search-chans";
+	long_opt[long_opt_idx].has_arg = no_argument;
+	long_opt[long_opt_idx].flag = opt_flag;
+	long_opt[long_opt_idx++].val = 0x00000201;
 
 
 

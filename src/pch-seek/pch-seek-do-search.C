@@ -5,6 +5,8 @@
 #include <math.h>
 
 bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header);
+void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header, float* amplitude_fscrunch, float* phase_spectum);
+
 /**
  *
  * Calls the appropriate operations in the correct sequence
@@ -35,6 +37,7 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header);
 void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float** time_arr){
 	int samp,chan,nchan,nsamp,ncomplex,ifold,icand;
 	char filename[1024];
+	char remeber_filename[1024];
 	fftwf_complex** complex_spectra; // the real-imag pairs
 	float** amplitude_spectra; // the amplitudes
 	float** phase_spectra; // the phases
@@ -96,6 +99,7 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 		if(operations->giant_search)printf(" - Single Pulse Search (GSearch)\n");
 		if(operations->dump_phases)printf(" - Dump phases\n");
 		if(operations->phase_fit)printf(" - Phase fit search\n");
+		if(operations->search_chans)printf(" - Search all %d channels in turn\n",nchan);
 		if(operations->fscrunch && nchan > 1)printf(" - Flatten in frequency\n");
 		if(operations->normalise_median)printf(" - Normalising amplitudes (median method)\n");
 		if(operations->normalise_agl)printf(" - Normalising amplitudes (Lyne et al. mean/rms method)\n");
@@ -125,18 +129,18 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 			printf("OP[END]: Dump Timeseries\n");
 		}
 		if (operations->hist_tim){
-                        printf("OP[START]: Histogram Timeseries\n");
-                        for (chan=0; chan < nchan; chan++){
-                                sprintf(filename,"timeseries_ch%03d.hist",chan);
-                                pch_seek_histogram(time_arr[chan],header->numberOfSamples,256, filename);
-                        }
-                        printf("OP[END]: Histogram Timeseries\n");
-                }
+			printf("OP[START]: Histogram Timeseries\n");
+			for (chan=0; chan < nchan; chan++){
+				sprintf(filename,"timeseries_ch%03d.hist",chan);
+				pch_seek_histogram(time_arr[chan],header->numberOfSamples,256, filename);
+			}
+			printf("OP[END]: Histogram Timeseries\n");
+		}
 
 
 		if (operations->giant_search){
 			/* 
-			 */
+			*/
 			printf("OP[START]: Single Pulse Search (GSearch) file: '%s'\n",operations->giantfile);
 			for (chan=0; chan < nchan; chan++){
 				strcpy(filename,operations->giantfile);
@@ -236,6 +240,17 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 			printf("OP[END]: phase fit search\n");
 		}
 
+		if (operations->search_chans){
+			// search each channel for periodic signals
+			// currently destroys the contents of the arrays!
+                        strcpy(remeber_filename,operations->prdfile);
+			for (chan=0; chan < nchan; chan++){
+				sprintf(operations->prdfile,"%s.ch%04d",remeber_filename,chan);
+				pch_seek_search_flat_spec(operations,header,amplitude_spectra[chan],phase_spectra[chan]);
+			}
+			strcpy(operations->prdfile,remeber_filename);
+		}
+
 		if (operations->fscrunch){
 			// fscrunch the amplitudes.
 			if(nchan>0)printf("OP[START]: Flattening in frequency\n");
@@ -247,142 +262,8 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 				}
 			}
 			if(nchan>0)printf("OP[END]: Flattening in frequency\n");
-
+			pch_seek_search_flat_spec(operations,header,amplitude_fscrunch,phase_spectra[0]);
 		}
-
-		if (operations->normalise_median){
-			// normalise the spectra using the reatough/agl median method
-			printf("OP[START]: Normalising using median method\n");
-			pch_seek_normalise_median(amplitude_fscrunch,ncomplex,1024);
-			printf("OP[END]: Normalising using median method\n");
-		}
-
-		if (operations->normalise_agl){
-                        // normalise the spectra using the reatough/agl median method
-                        printf("OP[START]: Normalising using Lyne et al. mean/rms method\n");
-                        pch_seek_normalise_agl_mean(amplitude_fscrunch,ncomplex,1024);
-                        printf("OP[END]: Normalising using Lyne et al. mean/rms method\n");
-                }
-
-                if (operations->normalise_powerlaw){
-                        // normalise the spectra using the reatough/agl median method
-                        printf("OP[START]: Normalising using powerlaw fitting\n");
-                        pch_seek_normalise_powerlaw(amplitude_fscrunch,ncomplex);
-			amplitude_fscrunch[0]=0;
-                        printf("OP[END]: Normalising using powerlaw fitting\n");
-                }
-
-
-
-		if (operations->dump_normalised){
-			printf("OP[START]: Dump normalised amplitudes\n");
-			sprintf(filename,"normalised_amp.ascii",chan);
-			pch_seek_dump(amplitude_fscrunch,ncomplex, 1.0/tobs, filename);
-			printf("OP[END]: Dump normalised amplitudes\n");
-		}
-		if (operations->hist_normalised){
-			printf("OP[START]: Histogram normalised amplitudes\n");
-			sprintf(filename,"normalised_amp.hist",chan);
-			pch_seek_histogram(amplitude_fscrunch,ncomplex,256, filename);
-			printf("OP[END]: Histogram normalised amplitudes\n");
-		}
-
-		if (operations->harmfold_simple && operations->nharms > 0){
-			printf("OP[START]: Harmonic folding (simple method) (H =");
-			for(int i=0; i <  operations->nharms; i++){
-				printf(" %d",operations->harmfolds[i]);
-			}
-			printf(")\n");
-			amplitude_harmfolds = pch_seek_harmfold_simple(amplitude_fscrunch,ncomplex,operations->harmfolds,operations->nharms);
-			printf("OP[END]: Harmonic folding (simple method)");
-			printf("\n");
-		}
-
-		if (operations->dump_harmfolds){
-			printf("OP[START]: Dump harmonicaly folded amplitudes\n");
-			for (ifold=0; ifold < operations->nharms; ifold++){
-				sprintf(filename,"harmfold_%03d.ascii",ifold);
-				pch_seek_dump(amplitude_harmfolds[ifold],ncomplex, 1.0/(operations->harmfolds[ifold]*tobs), filename);
-			}
-			printf("OP[END]: Dump harmonicaly folded amplitudes\n");
-		}
-		if (operations->hist_harmfolds){
-			printf("OP[START]: Histogram harmonicaly folded amplitudes\n");
-			for (ifold=0; ifold < operations->nharms; ifold++){
-				sprintf(filename,"harmfold_%03d.hist",ifold);
-				pch_seek_histogram(amplitude_harmfolds[ifold],ncomplex, 256, filename);
-			}
-			printf("OP[END]: Histogram harmonicaly folded amplitudes\n");
-		}
-
-
-
-		if (operations->search_amplitudes){
-			printf("OP[START]: Search amplitudes for SNR > %f\n",operations->amp_thresh);
-
-			amplitude_harmfold_freqs = (float**)malloc(sizeof(float*)*(operations->nharms+1));
-			amplitude_harmfold_spectral = (float**)malloc(sizeof(float*)*(operations->nharms+1));
-
-			float rms=0;
-
-			// work out an estimate of the 'actual' rms of the normalised data
-			// this method does the same thing as 'seek'
-			// perhaps it isn't the best thing to do...
-			int n=0;
-			for(samp=0; samp < ncomplex; samp+=1024){
-				if(fabs(amplitude_fscrunch[samp]) < 3.0){
-					rms+= amplitude_fscrunch[samp]*amplitude_fscrunch[samp];
-					n++;
-				}
-			}
-			rms = sqrt(rms/(float)n);
-			printf("Spectral RMS: %f\n",rms);
-
-			float** res;
-			// search the non-folded data
-			//float** pch_seek_search_spectrum(float* amplitudes, int ndat, float tobs, float threshold, int* ncand);
-			res=pch_seek_search_spectrum(amplitude_fscrunch,ncomplex,1.0/tobs,operations->amp_thresh,&(ncand_amp[0]),rms);
-			amplitude_harmfold_freqs[0]=res[0];
-			amplitude_harmfold_spectral[0]=res[1];
-			// search the folded data
-			for (ifold=0; ifold < operations->nharms; ifold++){
-				res=pch_seek_search_spectrum(amplitude_harmfolds[ifold],ncomplex,1.0/(operations->harmfolds[ifold]*tobs),operations->amp_thresh,&(ncand_amp[ifold+1]),rms*sqrt(operations->harmfolds[ifold]));
-				amplitude_harmfold_freqs[ifold+1]=res[0];
-				amplitude_harmfold_spectral[ifold+1]=res[1];
-			}
-			printf("OP[END]: Search amplitudes for SNR > %f\n",operations->amp_thresh);
-		}
-
-
-		if(operations->recon_add){
-			printf("OP[START]: Computing Recon SNR (addition method)\n");
-			amplitude_harmfold_recon = (float**)malloc(sizeof(float*)*(operations->nharms+1));
-			amplitude_harmfold_recon[0] = (float*)malloc(sizeof(float)*ncand_amp[0]);
-			for (icand = 0; icand < ncand_amp[0]; icand++){
-				amplitude_harmfold_recon[0][icand] = pch_seek_recon_add(amplitude_fscrunch, phase_spectra[0], ncomplex, 1, amplitude_harmfold_freqs[0][icand],1.0/tobs);
-			}
-			for (ifold=0; ifold < operations->nharms; ifold++){
-				amplitude_harmfold_recon[ifold+1] = (float*)malloc(sizeof(float)*ncand_amp[ifold+1]);
-				for (icand = 0; icand < ncand_amp[ifold+1]; icand++){
-					amplitude_harmfold_recon[ifold+1][icand] = pch_seek_recon_add(amplitude_fscrunch, phase_spectra[0], ncomplex, operations->harmfolds[ifold], amplitude_harmfold_freqs[ifold+1][icand],1.0/(operations->harmfolds[ifold]*tobs));
-				}
-			}
-			printf("OP[END]: Computing Recon SNR (addition method)\n");
-		}
-
-		if (operations->write_prd){
-			printf("OP[START]: Writing 'prd' file: '%s'\n",operations->prdfile);
-			int* mod_harmfolds = (int*)malloc(sizeof(int)*(operations->nharms+1));
-			// we have to add the '1' harmonic fold.
-			mod_harmfolds[0]=1;
-			memcpy(mod_harmfolds+1,operations->harmfolds,sizeof(int)*operations->nharms);
-
-			pch_seek_write_prd(operations->prdfile, amplitude_harmfold_freqs, amplitude_harmfold_spectral,
-					amplitude_harmfold_recon, ncand_amp, mod_harmfolds, operations->nharms+1, header);
-			printf("OP[END]: Writing 'prd' file: '%s'\n",operations->prdfile);
-		}
-
-
 		/*
 		 * Clean up the arrays that are left.
 		 *
@@ -393,33 +274,192 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 			if (amplitude_spectra[chan] != NULL)fftwf_free(amplitude_spectra[chan]);
 		}
 
-		if(amplitude_harmfolds!=NULL){
-			for(ifold = 0; ifold < operations->nharms; ifold++){
-				free(amplitude_harmfolds[ifold]);
-			}
-			free(amplitude_harmfolds);
-		}
-		if(amplitude_harmfold_recon!=NULL){
-			for(ifold = 0; ifold < operations->nharms+1; ifold++){
-				free(amplitude_harmfold_recon[ifold]);
-			}
-			free(amplitude_harmfold_recon);
-		}
-		if(amplitude_harmfold_spectral!=NULL){
-			for(ifold = 0; ifold < operations->nharms+1; ifold++){
-				free(amplitude_harmfold_spectral[ifold]);
-				free(amplitude_harmfold_freqs[ifold]);
-			}
-			free(amplitude_harmfold_spectral);
-			free(amplitude_harmfold_freqs);
-		}
-
 		free(time_arr);
 		free(complex_spectra);
 		free(amplitude_spectra);
 		free(phase_spectra);
+
 	}
 }
+void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header, float* amplitude_fscrunch, float* phase_spectrum)
+{
+
+	int samp,chan,nchan,nsamp,ncomplex,ifold,icand;
+	char filename[1024];
+	fftwf_complex** complex_spectra; // the real-imag pairs
+	float** amplitude_harmfolds; // the harmonic folds
+	float** amplitude_harmfold_freqs; // the best frequencies
+	float** amplitude_harmfold_spectral; // the best snrs
+	float** amplitude_harmfold_recon; // the best recon snrs
+	int* ncand_amp;
+	float tobs;
+
+	tobs=header->actualObsTime;
+	nchan=header->numberOfChannels;
+	nsamp=header->numberOfSamples;
+	ncomplex=nsamp/2;
+	amplitude_harmfolds=NULL;
+	ncand_amp = (int*)malloc(sizeof(int)*(operations->nharms+1));
+	amplitude_harmfold_freqs=amplitude_harmfold_spectral=amplitude_harmfold_recon=NULL;
+
+	if (operations->normalise_median){
+		// normalise the spectra using the reatough/agl median method
+		printf("OP[START]: Normalising using median method\n");
+		pch_seek_normalise_median(amplitude_fscrunch,ncomplex,1024);
+		printf("OP[END]: Normalising using median method\n");
+	}
+
+	if (operations->normalise_agl){
+		// normalise the spectra using the reatough/agl median method
+		printf("OP[START]: Normalising using Lyne et al. mean/rms method\n");
+		pch_seek_normalise_agl_mean(amplitude_fscrunch,ncomplex,1024);
+		printf("OP[END]: Normalising using Lyne et al. mean/rms method\n");
+	}
+
+	if (operations->normalise_powerlaw){
+		// normalise the spectra using the reatough/agl median method
+		printf("OP[START]: Normalising using powerlaw fitting\n");
+		pch_seek_normalise_powerlaw(amplitude_fscrunch,ncomplex);
+		amplitude_fscrunch[0]=0;
+		printf("OP[END]: Normalising using powerlaw fitting\n");
+	}
+
+
+
+	if (operations->dump_normalised){
+		printf("OP[START]: Dump normalised amplitudes\n");
+		sprintf(filename,"normalised_amp.ascii",chan);
+		pch_seek_dump(amplitude_fscrunch,ncomplex, 1.0/tobs, filename);
+		printf("OP[END]: Dump normalised amplitudes\n");
+	}
+	if (operations->hist_normalised){
+		printf("OP[START]: Histogram normalised amplitudes\n");
+		sprintf(filename,"normalised_amp.hist",chan);
+		pch_seek_histogram(amplitude_fscrunch,ncomplex,256, filename);
+		printf("OP[END]: Histogram normalised amplitudes\n");
+	}
+
+	if (operations->harmfold_simple && operations->nharms > 0){
+		printf("OP[START]: Harmonic folding (simple method) (H =");
+		for(int i=0; i <  operations->nharms; i++){
+			printf(" %d",operations->harmfolds[i]);
+		}
+		printf(")\n");
+		amplitude_harmfolds = pch_seek_harmfold_simple(amplitude_fscrunch,ncomplex,operations->harmfolds,operations->nharms);
+		printf("OP[END]: Harmonic folding (simple method)");
+		printf("\n");
+	}
+
+	if (operations->dump_harmfolds){
+		printf("OP[START]: Dump harmonicaly folded amplitudes\n");
+		for (ifold=0; ifold < operations->nharms; ifold++){
+			sprintf(filename,"harmfold_%03d.ascii",ifold);
+			pch_seek_dump(amplitude_harmfolds[ifold],ncomplex, 1.0/(operations->harmfolds[ifold]*tobs), filename);
+		}
+		printf("OP[END]: Dump harmonicaly folded amplitudes\n");
+	}
+	if (operations->hist_harmfolds){
+		printf("OP[START]: Histogram harmonicaly folded amplitudes\n");
+		for (ifold=0; ifold < operations->nharms; ifold++){
+			sprintf(filename,"harmfold_%03d.hist",ifold);
+			pch_seek_histogram(amplitude_harmfolds[ifold],ncomplex, 256, filename);
+		}
+		printf("OP[END]: Histogram harmonicaly folded amplitudes\n");
+	}
+
+
+
+	if (operations->search_amplitudes){
+		printf("OP[START]: Search amplitudes for SNR > %f\n",operations->amp_thresh);
+
+		amplitude_harmfold_freqs = (float**)malloc(sizeof(float*)*(operations->nharms+1));
+		amplitude_harmfold_spectral = (float**)malloc(sizeof(float*)*(operations->nharms+1));
+
+		float rms=0;
+
+		// work out an estimate of the 'actual' rms of the normalised data
+		// this method does the same thing as 'seek'
+		// perhaps it isn't the best thing to do...
+		int n=0;
+		for(samp=0; samp < ncomplex; samp+=1024){
+			if(fabs(amplitude_fscrunch[samp]) < 3.0){
+				rms+= amplitude_fscrunch[samp]*amplitude_fscrunch[samp];
+				n++;
+			}
+		}
+		rms = sqrt(rms/(float)n);
+		printf("Spectral RMS: %f\n",rms);
+
+		float** res;
+		// search the non-folded data
+		//float** pch_seek_search_spectrum(float* amplitudes, int ndat, float tobs, float threshold, int* ncand);
+		res=pch_seek_search_spectrum(amplitude_fscrunch,ncomplex,1.0/tobs,operations->amp_thresh,&(ncand_amp[0]),rms);
+		amplitude_harmfold_freqs[0]=res[0];
+		amplitude_harmfold_spectral[0]=res[1];
+		// search the folded data
+		for (ifold=0; ifold < operations->nharms; ifold++){
+			res=pch_seek_search_spectrum(amplitude_harmfolds[ifold],ncomplex,1.0/(operations->harmfolds[ifold]*tobs),operations->amp_thresh,&(ncand_amp[ifold+1]),rms*sqrt(operations->harmfolds[ifold]));
+			amplitude_harmfold_freqs[ifold+1]=res[0];
+			amplitude_harmfold_spectral[ifold+1]=res[1];
+		}
+		printf("OP[END]: Search amplitudes for SNR > %f\n",operations->amp_thresh);
+	}
+
+
+	if(operations->recon_add){
+		printf("OP[START]: Computing Recon SNR (addition method)\n");
+		amplitude_harmfold_recon = (float**)malloc(sizeof(float*)*(operations->nharms+1));
+		amplitude_harmfold_recon[0] = (float*)malloc(sizeof(float)*ncand_amp[0]);
+		for (icand = 0; icand < ncand_amp[0]; icand++){
+			amplitude_harmfold_recon[0][icand] = pch_seek_recon_add(amplitude_fscrunch, phase_spectrum, ncomplex, 1, amplitude_harmfold_freqs[0][icand],1.0/tobs);
+		}
+		for (ifold=0; ifold < operations->nharms; ifold++){
+			amplitude_harmfold_recon[ifold+1] = (float*)malloc(sizeof(float)*ncand_amp[ifold+1]);
+			for (icand = 0; icand < ncand_amp[ifold+1]; icand++){
+				amplitude_harmfold_recon[ifold+1][icand] = pch_seek_recon_add(amplitude_fscrunch, phase_spectrum, ncomplex, operations->harmfolds[ifold], amplitude_harmfold_freqs[ifold+1][icand],1.0/(operations->harmfolds[ifold]*tobs));
+			}
+		}
+		printf("OP[END]: Computing Recon SNR (addition method)\n");
+	}
+
+	if (operations->write_prd){
+		printf("OP[START]: Writing 'prd' file: '%s'\n",operations->prdfile);
+		int* mod_harmfolds = (int*)malloc(sizeof(int)*(operations->nharms+1));
+		// we have to add the '1' harmonic fold.
+		mod_harmfolds[0]=1;
+		memcpy(mod_harmfolds+1,operations->harmfolds,sizeof(int)*operations->nharms);
+
+		pch_seek_write_prd(operations->prdfile, amplitude_harmfold_freqs, amplitude_harmfold_spectral,
+				amplitude_harmfold_recon, ncand_amp, mod_harmfolds, operations->nharms+1, header);
+		printf("OP[END]: Writing 'prd' file: '%s'\n",operations->prdfile);
+	}
+
+	/*
+	 *Clean up remaining arrays.
+	 */
+	if(amplitude_harmfolds!=NULL){
+		for(ifold = 0; ifold < operations->nharms; ifold++){
+			free(amplitude_harmfolds[ifold]);
+		}
+		free(amplitude_harmfolds);
+	}
+	if(amplitude_harmfold_recon!=NULL){
+		for(ifold = 0; ifold < operations->nharms+1; ifold++){
+			free(amplitude_harmfold_recon[ifold]);
+		}
+		free(amplitude_harmfold_recon);
+	}
+	if(amplitude_harmfold_spectral!=NULL){
+		for(ifold = 0; ifold < operations->nharms+1; ifold++){
+			free(amplitude_harmfold_spectral[ifold]);
+			free(amplitude_harmfold_freqs[ifold]);
+		}
+		free(amplitude_harmfold_spectral);
+		free(amplitude_harmfold_freqs);
+	}
+
+}
+
 
 /**
  *
@@ -461,10 +501,22 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 
 	}
 
+
+	if (operations->search_chans){
+		operations->fft_input = 1;
+		operations->form_amplitudes=1;
+		if (operations->fscrunch){
+			fprintf(stderr, "Sorry, cannot fscrunch and search all channels :(\n");
+			return 3;
+		}
+	} else {
+		operations->fscrunch=1;
+	}
+
+
 	if (operations->dump_normalised || operations->hist_normalised){
 		operations->fft_input = 1;
 		operations->form_amplitudes=1;
-		operations->fscrunch=1;
 		if(!(operations->normalise_agl || operations->normalise_powerlaw || operations->normalise_median))operations->normalise_powerlaw=1;
 	}
 
@@ -475,7 +527,7 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 	if(operations->recon_add){
 		if (header->numberOfChannels > 1){
 			fprintf(stderr, "Cannot compute recon SNR with multi-channel data\n");
-			return 2;
+			return 4;
 
 		}
 
@@ -492,11 +544,10 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 	if (operations->harmfold_simple){
 		operations->fft_input = 1;
 		operations->form_amplitudes=1;
-		operations->fscrunch=1;
 		if(!(operations->normalise_agl || operations->normalise_powerlaw || operations->normalise_median))operations->normalise_powerlaw=1;
 	}
 
-	
+
 
 
 	return 0;

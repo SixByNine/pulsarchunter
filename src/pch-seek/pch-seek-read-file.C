@@ -39,11 +39,15 @@ float** pch_seek_read_file(psrxml* header){
 	swap_chans = header->freqOffset > 0;
 
 	fprintf(stdout,"Reading data file '%s'.\n",file->filename);
-
+	if(file->bitsPerSample < 8){
+		nbytes_to_read = header->numberOfSamples * header->numberOfChannels / (8/file->bitsPerSample);
+	} else {
+	        nbytes_to_read = header->numberOfSamples * (file->bitsPerSample / 8) * header->numberOfChannels;
+	}
 	//	the byte_array stores one block of byte data
 	byte_array = (unsigned char*)malloc(file->blockLength);
 	//	float_array stores byte_array in floats, channel by channel (i.e. PFT order)
-	float_array = (float*) malloc(file->blockLength*sizeof(float));
+	float_array = (float*) malloc(nbytes_to_read*sizeof(float));
 	// block_chan_array are pointers to the start of each channel in float_array
 	block_chan_array = (float**)malloc(sizeof(float*) * header->numberOfChannels);
 	//      the output store the channel time-series
@@ -66,9 +70,7 @@ float** pch_seek_read_file(psrxml* header){
 	readPsrXMLPrepDataFile(file, file->filename);
 
 	start = 0;
-	nbytes_to_read = header->numberOfSamples * (file->bitsPerSample / 8) * header->numberOfChannels;
 	blocks_read=0;
-	
 	update_on_block = (int)(1024*1024*10/file->blockLength);
 	if(update_on_block < 1)update_on_block=1;
 	// we now try and read the entire file, 'block' at a time into the float arrays.
@@ -83,9 +85,14 @@ float** pch_seek_read_file(psrxml* header){
 		}
 		nbytes_to_read -= read;
 
-		nsamps = (read * 8/file->bitsPerSample) / header->numberOfChannels;
+		if(file->bitsPerSample < 8){
+			nsamps = (read * (8/file->bitsPerSample)) / header->numberOfChannels;
+		} else {
+			nsamps = (read / (file->bitsPerSample/8)) / header->numberOfChannels;
+		}
 		end = start+nsamps;
 		unpackDataChunk(byte_array, float_array,header,0,nsamps,0,nsamps,swap_chans);
+
 		unpackToChannels(float_array,block_chan_array,header->numberOfChannels,nsamps);	
 
 		// Now I do a memcopy. this is probably not the most efficient way to do it but I don't want to have to transform the entire file.
@@ -134,6 +141,7 @@ void pch_seek_init_operations(pch_seek_operations_t* operations){
 	operations->hist_harmfolds=0;
 
 	operations->phase_fit=0;
+	operations->search_chans=0;
 	operations->fscrunch=0;
 	operations->normalise_median=0;
 	operations->normalise_powerlaw=0;

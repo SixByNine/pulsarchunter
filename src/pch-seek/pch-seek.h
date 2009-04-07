@@ -18,6 +18,7 @@ typedef struct pch_seek_operations{
 	char hist_normalised;
 	char hist_harmfolds;
 	char phase_fit;
+	char search_chans;
 	char fscrunch;
 	char normalise_median;
 	char normalise_agl;
