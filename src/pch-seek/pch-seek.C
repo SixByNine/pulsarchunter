@@ -32,6 +32,7 @@ int main(int argc, char** argv){
 	int threads=0;
 	int long_opt_idx = 0;
 	int opt_flag = 0;
+	int scrunch_factor=1;
 	struct option long_opt[256];
 	pch_seek_operations_t operations;
 
@@ -110,6 +111,10 @@ int main(int argc, char** argv){
 			case 0x00000201: //seach-chans
 				operations.search_chans=1;
 				break;
+			case 0x00000202: //tscrunch
+				scrunch_factor = atof(optarg);
+				break;
+
 
 			default:
 				opt_flag = 0;
@@ -206,7 +211,7 @@ int main(int argc, char** argv){
 	}
 
 	// Now we read the data file into memory, if it fits!
-	data_array = pch_seek_read_file(header);
+	data_array = pch_seek_read_file(header,scrunch_factor);
 	if(data_array == NULL){
 		// we cannot contiune... data couldn't be read or memory couldn't be allocated.
 		fprintf(stderr,"Error, could not read data\n");
@@ -384,6 +389,10 @@ int set_options(struct option* long_opt, int* opt_flag){
 	long_opt[long_opt_idx++].val = 0x00000201;
 
 
+	long_opt[long_opt_idx].name = "tscrunch";
+	long_opt[long_opt_idx].has_arg = required_argument;
+	long_opt[long_opt_idx].flag = opt_flag;
+	long_opt[long_opt_idx++].val = 0x00000202;
 
 
 

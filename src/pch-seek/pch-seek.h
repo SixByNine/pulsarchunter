@@ -44,7 +44,7 @@ typedef struct pch_seek_operations{
 void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float** data_arr);
 
 /* pch-seek-read-file.C */
-float** pch_seek_read_file(psrxml* header);
+float** pch_seek_read_file(psrxml* header, int scrunch_factor);
 void pch_seek_init_operations(pch_seek_operations_t* ops);
 
 /* pch-seek-output.C */

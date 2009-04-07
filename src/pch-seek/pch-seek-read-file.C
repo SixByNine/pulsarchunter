@@ -20,19 +20,20 @@
  * 2008-12-22	M.Keith		Initial version
  *
  */
-float** pch_seek_read_file(psrxml* header){
+float** pch_seek_read_file(psrxml* header, int scrunch_factor){
 
 	unsigned char* byte_array;
 	float** output;
 	float* float_array;
 	float** block_chan_array;
 	int data_size;
-	int chan;
-	int start,end,nsamps;
+	int chan,samp;
+	int start,nsamps;
 	char swap_chans;
 	int nbytes_to_read;
 	int read,blocks_read;
 	int update_on_block;
+	long long int totbytes;
 	dataFile* file;
 
 	file=header->files[0];
@@ -55,15 +56,19 @@ float** pch_seek_read_file(psrxml* header){
 
 	// now try and malloc enough memory for the entire file!
 	// we malloc for an extra two samples to cover for the later transform to a complex spectrum
-	fprintf(stdout,"Trying to malloc %d bytes for the data.\n", header->numberOfChannels*sizeof(float)*(header->numberOfSamples+2));
+	
+	totbytes = (long long int)header->numberOfChannels*(long long int)sizeof(float)*(long long int)(header->numberOfSamples+2) / (long long int)scrunch_factor; 
+	fprintf(stdout,"Trying to malloc %lld bytes (%d MB) for the data.\n", totbytes, totbytes/1048576);
 	for (chan=0; chan < header->numberOfChannels; chan++){
-		output[chan] = (float*)malloc(sizeof(float)*(header->numberOfSamples+2));
+		output[chan] = (float*)malloc(sizeof(float)*(header->numberOfSamples+2)/scrunch_factor);
 		if(output[chan]==NULL){
 			// we probably ran out of memory...
 			fprintf(stderr,"Could not allocate enough memory\n");
 			return NULL;
 		}
 	}
+
+        if (scrunch_factor > 1) fprintf(stdout,"Tscrunching data by a factor of %d.\n", scrunch_factor);
 
 
 	// prepare for reading!
@@ -90,16 +95,21 @@ float** pch_seek_read_file(psrxml* header){
 		} else {
 			nsamps = (read / (file->bitsPerSample/8)) / header->numberOfChannels;
 		}
-		end = start+nsamps;
 		unpackDataChunk(byte_array, float_array,header,0,nsamps,0,nsamps,swap_chans);
 
 		unpackToChannels(float_array,block_chan_array,header->numberOfChannels,nsamps);	
 
 		// Now I do a memcopy. this is probably not the most efficient way to do it but I don't want to have to transform the entire file.
 		for (chan=0; chan < header->numberOfChannels; chan++){
-			memcpy(output[chan]+start,block_chan_array[chan], nsamps*sizeof(float));
+			if(scrunch_factor > 1){
+				for(samp=0;samp<nsamps;samp++){					
+					if(!(samp%scrunch_factor))block_chan_array[chan][samp/scrunch_factor]=0;
+					block_chan_array[chan][samp/scrunch_factor] += block_chan_array[chan][samp];
+				}
+			}
+			memcpy(output[chan]+start,block_chan_array[chan], nsamps*sizeof(float)/scrunch_factor);
 		}
-		start+=nsamps;
+		start+=nsamps/scrunch_factor;
 		blocks_read++;
 		if(!(blocks_read % update_on_block)){	
 			fprintf(stdout,"\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
@@ -121,6 +131,8 @@ float** pch_seek_read_file(psrxml* header){
 
 
 
+	header->numberOfSamples /= scrunch_factor;
+	header->currentSampleInterval *= scrunch_factor;
 	return output;
 
 }
