@@ -25,7 +25,7 @@ int main(int argc, char** argv){
 
 	float** data_array;
 	psrxml* header;
-	const char* args = "dhprT:H:";
+	const char* args = "dhprT:G:H:";
 	char c;
 	FILE *dmfile;
 	int dmtrials_size;
@@ -67,6 +67,23 @@ int main(int argc, char** argv){
 			case 0x00000005: // dump-harmfolds
 				operations.dump_harmfolds=1;
 				break;
+
+			case 0x00000008: // hist-tim
+				operations.hist_tim=1;
+				break;
+			case 0x00000009: // hist-amplitudes
+				operations.hist_amplitudes=1;
+				break;
+			case 0x0000000A: // hist-tim
+                                operations.hist_normalised=1;
+                                break;
+                        case 0x0000000B: // hist-amplitudes
+                                operations.hist_harmfolds=1;
+                                break;
+
+
+
+
 
 			case 0x00000011: // normaise-median
 				operations.normalise_median=1;
@@ -113,6 +130,10 @@ int main(int argc, char** argv){
 
 					case 'r': //recon-add
 						operations.recon_add=1;
+						break;
+					case 'G':
+						operations.giant_search=1;
+						strcpy(operations.giantfile,optarg);
 						break;
 
 					case 'H': //select harmonic folds
@@ -257,6 +278,29 @@ int set_options(struct option* long_opt, int* opt_flag){
 	long_opt[long_opt_idx].flag = opt_flag;
 	long_opt[long_opt_idx++].val = 0x00000005;
 
+	long_opt[long_opt_idx].name = "hist-tim";
+	long_opt[long_opt_idx].has_arg = no_argument;
+	long_opt[long_opt_idx].flag = opt_flag;
+	long_opt[long_opt_idx++].val = 0x00000008;
+
+	long_opt[long_opt_idx].name = "hist-amplitudes";
+	long_opt[long_opt_idx].has_arg = no_argument;
+	long_opt[long_opt_idx].flag = opt_flag;
+	long_opt[long_opt_idx++].val = 0x00000009;
+
+	long_opt[long_opt_idx].name = "hist-normalised";
+	long_opt[long_opt_idx].has_arg = no_argument;
+	long_opt[long_opt_idx].flag = opt_flag;
+	long_opt[long_opt_idx++].val = 0x0000000A;
+
+	long_opt[long_opt_idx].name = "hist-harmfolds";
+	long_opt[long_opt_idx].has_arg = no_argument;
+	long_opt[long_opt_idx].flag = opt_flag;
+	long_opt[long_opt_idx++].val = 0x0000000B;
+
+
+
+
 
 
 	long_opt[long_opt_idx].name = "phase-fit";
@@ -323,6 +367,11 @@ int set_options(struct option* long_opt, int* opt_flag){
 	long_opt[long_opt_idx].has_arg = required_argument;
 	long_opt[long_opt_idx].flag = opt_flag;
 	long_opt[long_opt_idx++].val = 0x00000111;
+
+	long_opt[long_opt_idx].name = "giant-search";
+	long_opt[long_opt_idx].has_arg = required_argument;
+	long_opt[long_opt_idx].flag = NULL;
+	long_opt[long_opt_idx++].val = 'G';
 
 
 

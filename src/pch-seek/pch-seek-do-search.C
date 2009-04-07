@@ -84,6 +84,7 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 		 */
 		printf("Operations:\n");
 		if(operations->dump_tim)printf(" - Dump timeseries\n");
+		if(operations->hist_tim)printf(" - Histogram timeseries\n");
 		if(operations->fft_input)printf(" - Fourier transform\n");
 		if(operations->form_amplitudes){
 			printf(" - Form phases/amplitudes");
@@ -91,6 +92,8 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 			else printf(" (natural mode)\n");
 		}
 		if(operations->dump_amplitudes)printf(" - Dump amplitudes\n");
+		if(operations->hist_amplitudes)printf(" - Histogram amplitudes\n");
+		if(operations->giant_search)printf(" - Single Pulse Search (GSearch)\n");
 		if(operations->dump_phases)printf(" - Dump phases\n");
 		if(operations->phase_fit)printf(" - Phase fit search\n");
 		if(operations->fscrunch && nchan > 1)printf(" - Flatten in frequency\n");
@@ -98,8 +101,10 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 		if(operations->normalise_agl)printf(" - Normalising amplitudes (Lyne et al. mean/rms method)\n");
 		if(operations->normalise_powerlaw)printf(" - Normalising amplitudes (powerlaw fitting method)\n");
 		if(operations->dump_normalised)printf(" - Dump normalised amplitudes\n");
+		if(operations->hist_normalised)printf(" - Histogram normalised amplitudes\n");
 		if(operations->harmfold_simple && operations->nharms > 0)printf(" - Harmonicly folding %d times (simple method)\n",operations->nharms);
 		if(operations->dump_harmfolds)printf(" - Dump harmonicaly folded amplitudes\n");
+		if(operations->hist_harmfolds)printf(" - Histogram harmonicaly folded amplitudes\n");
 		if(operations->search_amplitudes)printf(" - Search harmonicaly folded amplitudes\n");
 		if(operations->recon_add)printf(" - Compute recon SNR (addition method)\n");
 
@@ -119,6 +124,31 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 			}
 			printf("OP[END]: Dump Timeseries\n");
 		}
+		if (operations->hist_tim){
+                        printf("OP[START]: Histogram Timeseries\n");
+                        for (chan=0; chan < nchan; chan++){
+                                sprintf(filename,"timeseries_ch%03d.hist",chan);
+                                pch_seek_histogram(time_arr[chan],header->numberOfSamples,256, filename);
+                        }
+                        printf("OP[END]: Histogram Timeseries\n");
+                }
+
+
+		if (operations->giant_search){
+			/* 
+			 */
+			printf("OP[START]: Single Pulse Search (GSearch) file: '%s'\n",operations->giantfile);
+			for (chan=0; chan < nchan; chan++){
+				strcpy(filename,operations->giantfile);
+				for (chan=0; chan < nchan; chan++){
+					if(nchan > 1) sprintf(filename,"%s_ch%03d",operations->giantfile,chan);
+					pch_seek_singlepulse(time_arr[chan],header->numberOfSamples,5.0,header->referenceDm,8,header->receiverBeamNumber, filename);
+				}
+
+			}
+			printf("OP[END]: Single Pulse Search (GSearch)\n");
+		}
+
 
 
 		if (operations->fft_input){
@@ -172,6 +202,16 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 			printf("OP[END]: Form phase-amplitude spectra\n");
 
 		}
+
+		if (operations->hist_amplitudes){
+			printf("OP[START]: Histogram amplitudes\n");
+			for (chan=0; chan < nchan; chan++){
+				sprintf(filename,"amplitudes_ch%03d.hist",chan);
+				pch_seek_histogram(amplitude_spectra[chan],ncomplex, 256, filename);
+			}
+			printf("OP[END]: Histogram amplitudes\n");
+		}
+
 
 		if (operations->dump_amplitudes){
 			printf("OP[START]: Dump amplitudes\n");
@@ -240,6 +280,12 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 			pch_seek_dump(amplitude_fscrunch,ncomplex, 1.0/tobs, filename);
 			printf("OP[END]: Dump normalised amplitudes\n");
 		}
+		if (operations->hist_normalised){
+			printf("OP[START]: Histogram normalised amplitudes\n");
+			sprintf(filename,"normalised_amp.hist",chan);
+			pch_seek_histogram(amplitude_fscrunch,ncomplex,256, filename);
+			printf("OP[END]: Histogram normalised amplitudes\n");
+		}
 
 		if (operations->harmfold_simple && operations->nharms > 0){
 			printf("OP[START]: Harmonic folding (simple method) (H =");
@@ -260,6 +306,15 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 			}
 			printf("OP[END]: Dump harmonicaly folded amplitudes\n");
 		}
+		if (operations->hist_harmfolds){
+			printf("OP[START]: Histogram harmonicaly folded amplitudes\n");
+			for (ifold=0; ifold < operations->nharms; ifold++){
+				sprintf(filename,"harmfold_%03d.hist",ifold);
+				pch_seek_histogram(amplitude_harmfolds[ifold],ncomplex, 256, filename);
+			}
+			printf("OP[END]: Histogram harmonicaly folded amplitudes\n");
+		}
+
 
 
 		if (operations->search_amplitudes){
@@ -387,7 +442,7 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 	/*
 	 * Check for sane combinations of options
 	 */
-	if (operations->dump_amplitudes || operations->dump_phases){
+	if (operations->dump_amplitudes || operations->dump_phases || operations->hist_amplitudes){
 		operations->fft_input = 1;
 		operations->form_amplitudes=1;
 	}
@@ -406,14 +461,14 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 
 	}
 
-	if (operations->dump_normalised){
+	if (operations->dump_normalised || operations->hist_normalised){
 		operations->fft_input = 1;
 		operations->form_amplitudes=1;
 		operations->fscrunch=1;
-		if(!(operations->normalise_agl || operations->normalise_powerlaw))operations->normalise_powerlaw=1;
+		if(!(operations->normalise_agl || operations->normalise_powerlaw || operations->normalise_median))operations->normalise_powerlaw=1;
 	}
 
-	if (operations->dump_harmfolds){
+	if (operations->dump_harmfolds || operations->hist_harmfolds){
 		operations->harmfold_simple=1;
 	}
 
@@ -438,7 +493,7 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 		operations->fft_input = 1;
 		operations->form_amplitudes=1;
 		operations->fscrunch=1;
-		if(!(operations->normalise_agl || operations->normalise_powerlaw))operations->normalise_powerlaw=1;
+		if(!(operations->normalise_agl || operations->normalise_powerlaw || operations->normalise_median))operations->normalise_powerlaw=1;
 	}
 
 	

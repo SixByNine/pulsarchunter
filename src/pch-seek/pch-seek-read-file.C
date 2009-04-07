@@ -127,16 +127,25 @@ void pch_seek_init_operations(pch_seek_operations_t* operations){
 	operations->dump_phases=0;
 	operations->dump_normalised=0;
 	operations->dump_harmfolds=0;
+
+	operations->hist_tim=0;
+	operations->hist_amplitudes=0;
+	operations->hist_normalised=0;
+	operations->hist_harmfolds=0;
+
 	operations->phase_fit=0;
 	operations->fscrunch=0;
 	operations->normalise_median=0;
 	operations->normalise_powerlaw=0;
 	operations->normalise_agl=0;
+	
 
 	operations->harmfold_simple=0;
 	operations->search_amplitudes=0;
 	operations->write_prd=0;
 	operations->recon_add=0;
+	operations->giant_search = 0;
+
 
 	operations->ndm=0;
 	operations->dmtrials=NULL;
@@ -144,5 +153,6 @@ void pch_seek_init_operations(pch_seek_operations_t* operations){
 	operations->nharms=0;
 	strcpy(operations->prdfile,"out.prd");
 	operations->amp_thresh=5;
+	strcpy(operations->giantfile,"giant.sp");
 
 }

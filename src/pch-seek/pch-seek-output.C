@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+
+char matches_sigproc(float p1, float p2);
+
 /**
  * A 'dummy' operation that dumps spectra etc.
  */
@@ -25,6 +28,44 @@ void pch_seek_dump(float* data, int len, float xscale, char* filename){
 
 	return;
 }
+
+void pch_seek_histogram(float* data, int len, int hist_bins, char* filename){
+
+	FILE* file;
+	int i;
+	int *count;
+	int hbin;
+	float max,min,binsize;
+
+	count = (int*)calloc(hist_bins,sizeof(int));
+
+	max = -1e10;
+	min = 1e10;
+
+
+	for(i=0; i < len; i++){
+		if(min > data[i])min = data[i];
+		if(max < data[i])max = data[i];
+	}
+
+	for(i=0; i < len; i++){
+		hbin=(int)(((data[i]-min)/(max-min))*hist_bins);
+		count[hbin]++;
+	}
+
+	file = fopen(filename,"w");
+
+	binsize = (max-min)/(float)(hist_bins);
+
+	for(i=0; i < hist_bins; i++){
+		fprintf(file,"%f %d\n",(float)i*binsize + min,count[i]);
+	}
+
+	fclose(file);
+
+	return;
+}
+
 
 void pch_seek_write_prd(char* filename, float** freq, float** spec, float** recon, int* ncand, int* harms, int nharm, psrxml* header){
 
@@ -72,7 +113,9 @@ void pch_seek_write_prd(char* filename, float** freq, float** spec, float** reco
 			found = 0;
 
 			for(int x=0; x < nex; x++){
-				if(fabs(existing_freqs[x]/freq[ifold][indexes[ifold][icand]]-1) < 0.001){
+				if(fabs(existing_freqs[x]/freq[ifold][indexes[ifold][icand]]-1) < 0.001 || 
+						matches_sigproc(1.0/existing_freqs[x],1.0/freq[ifold][indexes[ifold][icand]])){
+
 					// swap index to the end
 					for(int y=icand+1; y < ncand[ifold]; y++){
 						indexes[ifold][y-1]=indexes[ifold][y];
@@ -170,4 +213,25 @@ void pch_seek_write_prd(char* filename, float** freq, float** spec, float** reco
 	}
 	free(indexes);
 
+}
+
+
+
+
+char matches_sigproc(float p1, float p2){
+	float ratio;
+	char ret;
+	ret = 0;
+
+	ratio=p1/p2;
+	if (ratio < 1.0) ratio=1.0/ratio;
+	ratio=ratio-(int)(ratio);
+
+
+	ret |= ratio > 0.999 || ratio < 0.001;
+	ret |= ratio > 0.333 && ratio < 0.334;
+	ret |= ratio > 0.499 && ratio < 0.501;
+	ret |= ratio > 0.666 && ratio < 0.667;
+
+	return ret;
 }

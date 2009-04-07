@@ -22,7 +22,7 @@ AC_DEFUN([MJK_LIB_FFTW],
 
 
   FFTW_CFLAGS=""
-  FFTW_LIBS="-lfftw3f"
+  FFTW_LIBS="-lfftw3f -lm"
 
   if test x"$with_fftw_dir" != xyes; then
   	FFTW_LIBS="-L$with_fftw_dir/lib $FFTW_LIBS"
