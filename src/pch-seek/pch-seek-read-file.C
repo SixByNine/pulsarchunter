@@ -32,6 +32,7 @@ float** pch_seek_read_file(psrxml* header, int scrunch_factor){
 	char swap_chans;
 	int nbytes_to_read;
 	int read,blocks_read;
+	int float_block_length;
 	int update_on_block;
 	long long int totbytes;
 	dataFile* file;
@@ -41,14 +42,18 @@ float** pch_seek_read_file(psrxml* header, int scrunch_factor){
 
 	fprintf(stdout,"Reading data file '%s'.\n",file->filename);
 	if(file->bitsPerSample < 8){
+		float_block_length=file->blockLength * (8/file->bitsPerSample);
 		nbytes_to_read = header->numberOfSamples * header->numberOfChannels / (8/file->bitsPerSample);
 	} else {
+		float_block_length=file->blockLength / (file->bitsPerSample/8);
 	        nbytes_to_read = header->numberOfSamples * (file->bitsPerSample / 8) * header->numberOfChannels;
 	}
+
+
 	//	the byte_array stores one block of byte data
 	byte_array = (unsigned char*)malloc(file->blockLength);
 	//	float_array stores byte_array in floats, channel by channel (i.e. PFT order)
-	float_array = (float*) malloc(nbytes_to_read*sizeof(float));
+	float_array = (float*) malloc(float_block_length*sizeof(float));
 	// block_chan_array are pointers to the start of each channel in float_array
 	block_chan_array = (float**)malloc(sizeof(float*) * header->numberOfChannels);
 	//      the output store the channel time-series
