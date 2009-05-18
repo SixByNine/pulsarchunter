@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <errno.h>
+#include <string.h>
 
 char matches_sigproc(float p1, float p2);
 
@@ -66,6 +68,36 @@ void pch_seek_histogram(float* data, int len, int hist_bins, char* filename){
 	return;
 }
 
+void pch_seek_write_presto_fft(char* filestem, fftwf_complex* spectrum, int ncomplex, psrxml* header){
+	
+	FILE* file;
+	int ret;
+	char* filename;
+
+	filename = (char*) malloc(sizeof(char) * (strlen(filestem)+5));
+	sprintf(filename,"%s.fft",filestem);
+	file=fopen(filename,"w");
+	if (file==NULL){
+		fprintf(stderr,"Error opening presto fft binary file '%s'.\nErr: %d, %s",filename,errno,strerror(errno));
+		exit(1);
+	}
+	ret=fwrite(spectrum,sizeof(fftwf_complex),ncomplex,file);
+	if (ret != ncomplex){
+		fprintf(stderr,"Error writing raw spectrum to presto fft binary file '%s'.\nErr: %d, %s",filename,errno,strerror(errno));
+		exit(1);
+	}
+	fclose(file);
+	sprintf(filename,"%s.hdr",filestem);
+	file=fopen(filename,"w");
+	if (file==NULL){
+		fprintf(stderr,"Error opening presto header file '%s'!\nErr: %d, %s",filename,errno,strerror(errno));
+		exit(1);
+	}
+	/*
+	 * @todo: Add in the header parameters required by presto!
+	 */
+	fclose(file);
+}
 
 void pch_seek_write_prd(char* filename, float** freq, float** spec, float** recon, int* ncand, int* harms, int nharm, psrxml* header){
 

@@ -89,6 +89,7 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 		if(operations->dump_tim)printf(" - Dump timeseries\n");
 		if(operations->hist_tim)printf(" - Histogram timeseries\n");
 		if(operations->fft_input)printf(" - Fourier transform\n");
+		if(operations->write_presto_fft)printf(" - Write raw spectrum to presto file ('%s.fft')\n",operations->presto_fft_file);
 		if(operations->form_amplitudes){
 			printf(" - Form phases/amplitudes");
 			if(operations->twiddle_amplitudes)printf(" (twiddle mode)\n");
@@ -166,6 +167,24 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 			}
 			printf("OP[END]: FFT Timeseries\n");
 
+		}
+		if (operations->write_presto_fft){
+			/* This operation writes out the fft'd data in a form that
+			 * can be read in by S.Ransom's presto software.
+			 */
+			printf("OP[START]: Write raw spectrum to presto file\n");
+			if(nchan > 1){
+				// If we have multiple channels, we have to write out many files as
+				// I don't think presto supports multi-channel spectra
+				for (chan=0; chan < nchan; chan++){
+					sprintf(filename,"%s%03d",operations->presto_fft_file,chan);
+					pch_seek_write_presto_fft(filename,complex_spectra[chan],ncomplex,header);
+				}
+			} else {
+				// otherwise just call the write function on the data.
+				pch_seek_write_presto_fft(operations->presto_fft_file,complex_spectra[chan],ncomplex,header);
+			}
+			printf("OP[END]: Write raw spectrum to presto file\n");
 		}
 
 		if (operations->form_amplitudes){
@@ -479,9 +498,14 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 		return 1;
 	}
 
+	
 	/*
 	 * Check for sane combinations of options
 	 */
+
+	if (operations->write_presto_fft){
+		operations->fft_input=1;
+	}
 	if (operations->dump_amplitudes || operations->dump_phases || operations->hist_amplitudes){
 		operations->fft_input = 1;
 		operations->form_amplitudes=1;

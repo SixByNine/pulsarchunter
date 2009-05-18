@@ -107,7 +107,10 @@ int main(int argc, char** argv){
 				operations.write_prd=1;
 				strcpy(operations.prdfile,optarg);
 				break;
-
+			case 0x00000112: // write-presto-fft
+				operations.write_presto_fft=1;
+				strcpy(operations.presto_fft_file,optarg);
+				break;
 			case 0x00000201: //seach-chans
 				operations.search_chans=1;
 				break;
@@ -376,6 +379,12 @@ int set_options(struct option* long_opt, int* opt_flag){
 	long_opt[long_opt_idx].has_arg = required_argument;
 	long_opt[long_opt_idx].flag = opt_flag;
 	long_opt[long_opt_idx++].val = 0x00000111;
+
+	long_opt[long_opt_idx].name = "write-presto-fft";
+	long_opt[long_opt_idx].has_arg = required_argument;
+	long_opt[long_opt_idx].flag = opt_flag;
+	long_opt[long_opt_idx++].val = 0x00000112;
+
 
 	long_opt[long_opt_idx].name = "giant-search";
 	long_opt[long_opt_idx].has_arg = required_argument;

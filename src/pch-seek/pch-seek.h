@@ -28,14 +28,16 @@ typedef struct pch_seek_operations{
 	char recon_add;
 	char write_prd;
 	char giant_search;
+	char write_presto_fft;
 
 	// some options
 	float* dmtrials;
 	int ndm;
 	int* harmfolds;
 	int nharms;
-	char prdfile[256];
-	char giantfile[256];
+	char prdfile[512];
+	char presto_fft_file[512];
+	char giantfile[512];
 	float amp_thresh;
 } pch_seek_operations_t;
 
@@ -45,12 +47,15 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 
 /* pch-seek-read-file.C */
 float** pch_seek_read_file(psrxml* header, int scrunch_factor);
+
+/* pch-seek-init.C */
 void pch_seek_init_operations(pch_seek_operations_t* ops);
 
 /* pch-seek-output.C */
 void pch_seek_dump(float* data, int len, float xscale, char* filename);
 void pch_seek_histogram(float* data, int len, int hist_bins, char* filename);
 void pch_seek_write_prd(char* filename, float** freq, float** spec, float** recon, int* ncand, int* harms, int nharm, psrxml* header);
+void pch_seek_write_presto_fft(char* filestem, fftwf_complex* spectrum, int ncomplex, psrxml* header);
 
 /* pch-seek-fourier.C */
 void pch_seek_fourier_r2c(float* timeseries, int npoints);
