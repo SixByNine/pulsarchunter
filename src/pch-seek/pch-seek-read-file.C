@@ -124,6 +124,7 @@ float** pch_seek_read_file(psrxml* header, int scrunch_factor){
 
 		unpackToChannels(float_array,block_chan_array,header->numberOfChannels,nsamps);	
 
+		incr=0;
 		// Now I do a memcopy. this is probably not the most efficient way to do it but I don't want to have to transform the entire file.
 		for (chan=0; chan < header->numberOfChannels; chan++){
 			if(scrunch_factor > 1){
@@ -220,7 +221,10 @@ void pch_seek_init_operations(pch_seek_operations_t* operations){
 	operations->harmfold_simple=0;
 	operations->search_amplitudes=0;
 	operations->write_prd=0;
+	operations->append_output=0;
 	operations->recon_add=0;
+	operations->recon_ralph=0;
+
 	operations->giant_search = 0;
 
 
@@ -231,5 +235,6 @@ void pch_seek_init_operations(pch_seek_operations_t* operations){
 	strcpy(operations->prdfile,"out.prd");
 	operations->amp_thresh=5;
 	strcpy(operations->giantfile,"giant.sp");
+	operations->hfold_bonus_factor=0;
 
 }

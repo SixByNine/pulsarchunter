@@ -67,7 +67,7 @@ void pch_seek_histogram(float* data, int len, int hist_bins, char* filename){
 }
 
 
-void pch_seek_write_prd(char* filename, float** freq, float** spec, float** recon, int* ncand, int* harms, int nharm, psrxml* header){
+void pch_seek_write_prd(char* filename, float** freq, float** spec, float** recon, int* ncand, int* harms, int nharm, psrxml* header,char append){
 
 	int maxncand=0;
 	int ifold;
@@ -77,7 +77,11 @@ void pch_seek_write_prd(char* filename, float** freq, float** spec, float** reco
 
 	FILE *file;
 
-	file = fopen(filename, "w");
+	if(append){
+		file = fopen(filename, "a");
+	} else {
+		file = fopen(filename, "w");
+	}
 
 	indexes = (int**)malloc(sizeof(int*)*nharm);
 
@@ -155,38 +159,39 @@ void pch_seek_write_prd(char* filename, float** freq, float** spec, float** reco
 ##END HEADER##
 
 */
+	if (!append){
 
-	fprintf(file,"##BEGIN HEADER##\n");
-	fprintf(file,"SOURCEID = %s\n",header->sourceName);
-	fprintf(file,"FREF = %f MHz\n",header->centreFreqCh1);
-	fprintf(file,"TSTART = %f\n",header->mjdObs);
-	fprintf(file,"TELESCOPE = %s\n",header->telescope.name);
+		fprintf(file,"##BEGIN HEADER##\n");
+		fprintf(file,"SOURCEID = %s\n",header->sourceName);
+		fprintf(file,"FREF = %f MHz\n",header->centreFreqCh1);
+		fprintf(file,"TSTART = %f\n",header->mjdObs);
+		fprintf(file,"TELESCOPE = %s\n",header->telescope.name);
 
-	fprintf(file,"RAJ = %f\n",header->startCoordinate.ra);
-	fprintf(file,"DECJ = %f\n",header->startCoordinate.dec);
+		fprintf(file,"RAJ = %f\n",header->startCoordinate.ra);
+		fprintf(file,"DECJ = %f\n",header->startCoordinate.dec);
 
-	fprintf(file,"TSAMP = %f us\n",header->currentSampleInterval);
-	fprintf(file,"PROGRAM = %s\n",PACKAGE_NAME);
-	fprintf(file,"VERSION = %f\n",PACKAGE_VERSION);
+		fprintf(file,"TSAMP = %f us\n",header->currentSampleInterval);
+		fprintf(file,"PROGRAM = %s\n",PACKAGE_NAME);
+		fprintf(file,"VERSION = %f\n",PACKAGE_VERSION);
 
-	fprintf(file,"HARM_FOLDS =");
-	for(ifold = 0; ifold < nharm; ifold++){
-		fprintf(file," %d",harms[ifold]);
+		fprintf(file,"HARM_FOLDS =");
+		for(ifold = 0; ifold < nharm; ifold++){
+			fprintf(file," %d",harms[ifold]);
+		}
+		fprintf(file,"\n");
+
+		if(recon==NULL){
+			fprintf(file,"COLS = SNR_SPEC PERIOD\n");
+
+		} else {
+			fprintf(file,"COLS = SNR_SPEC SNR_RECON PERIOD\n");
+
+		}
+
+
+
+		fprintf(file,"##END HEADER##\n");
 	}
-	fprintf(file,"\n");
-
-	if(recon==NULL){
-		fprintf(file,"COLS = SNR_SPEC PERIOD\n");
-
-	} else {
-		fprintf(file,"COLS = SNR_SPEC SNR_RECON PERIOD\n");
-
-	}
-
-
-
-	fprintf(file,"##END HEADER##\n");
-
 
 	fprintf(file," DM:% 11.6f      AC:% 11.6f      AD:% 11.6f\n",header->referenceDm,0,0);
 

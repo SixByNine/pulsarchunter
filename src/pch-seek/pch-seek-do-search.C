@@ -305,14 +305,14 @@ void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header
 	if (operations->normalise_median){
 		// normalise the spectra using the reatough/agl median method
 		printf("OP[START]: Normalising using median method\n");
-		pch_seek_normalise_median(amplitude_fscrunch,ncomplex,1024);
+		pch_seek_normalise_median(amplitude_fscrunch,ncomplex,128);
 		printf("OP[END]: Normalising using median method\n");
 	}
 
 	if (operations->normalise_agl){
 		// normalise the spectra using the reatough/agl median method
 		printf("OP[START]: Normalising using Lyne et al. mean/rms method\n");
-		pch_seek_normalise_agl_mean(amplitude_fscrunch,ncomplex,1024);
+		pch_seek_normalise_agl_mean(amplitude_fscrunch,ncomplex,128);
 		printf("OP[END]: Normalising using Lyne et al. mean/rms method\n");
 	}
 
@@ -405,6 +405,34 @@ void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header
 		printf("OP[END]: Search amplitudes for SNR > %f\n",operations->amp_thresh);
 	}
 
+	if (operations->hfold_bonus_factor != 0.0){
+		printf("OP[START]: Adding 'bonus' sqrt(hfold)*%f to SNR for each fold\n",operations->hfold_bonus_factor);
+		for (icand = 0; icand < ncand_amp[0]; icand++){
+			amplitude_harmfold_spectral[0][icand] += operations->hfold_bonus_factor;
+		}
+		for (ifold=0; ifold < operations->nharms; ifold++){
+			for (icand = 0; icand < ncand_amp[ifold+1]; icand++){
+				amplitude_harmfold_spectral[ifold+1][icand] += sqrt(operations->harmfolds[ifold])*operations->hfold_bonus_factor;
+			}
+		}
+		printf("OP[END]: Adding 'bonus' sqrt(hfold)*%f to SNR for each fold\n",operations->hfold_bonus_factor);
+	}
+
+	if(operations->recon_ralph){
+		printf("OP[START]: Computing Recon SNR (R.Eatough method)\n");
+		amplitude_harmfold_recon = (float**)malloc(sizeof(float*)*(operations->nharms+1));
+		amplitude_harmfold_recon[0] = (float*)malloc(sizeof(float)*ncand_amp[0]);
+		for (icand = 0; icand < ncand_amp[0]; icand++){
+			amplitude_harmfold_recon[0][icand] = pch_seek_recon_ralph(amplitude_fscrunch, phase_spectrum, ncomplex, 1, amplitude_harmfold_freqs[0][icand],1.0/tobs);
+		}
+		for (ifold=0; ifold < operations->nharms; ifold++){
+			amplitude_harmfold_recon[ifold+1] = (float*)malloc(sizeof(float)*ncand_amp[ifold+1]);
+			for (icand = 0; icand < ncand_amp[ifold+1]; icand++){
+				amplitude_harmfold_recon[ifold+1][icand] = pch_seek_recon_ralph(amplitude_fscrunch, phase_spectrum, ncomplex, operations->harmfolds[ifold], amplitude_harmfold_freqs[ifold+1][icand],1.0/(operations->harmfolds[ifold]*tobs));
+			}
+		}
+		printf("OP[END]: Computing Recon SNR (R.Eatough method)\n");
+	}
 
 	if(operations->recon_add){
 		printf("OP[START]: Computing Recon SNR (addition method)\n");
@@ -430,7 +458,7 @@ void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header
 		memcpy(mod_harmfolds+1,operations->harmfolds,sizeof(int)*operations->nharms);
 
 		pch_seek_write_prd(operations->prdfile, amplitude_harmfold_freqs, amplitude_harmfold_spectral,
-				amplitude_harmfold_recon, ncand_amp, mod_harmfolds, operations->nharms+1, header);
+				amplitude_harmfold_recon, ncand_amp, mod_harmfolds, operations->nharms+1, header,operations->append_output);
 		printf("OP[END]: Writing 'prd' file: '%s'\n",operations->prdfile);
 	}
 
@@ -524,7 +552,7 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 		operations->harmfold_simple=1;
 	}
 
-	if(operations->recon_add){
+	if(operations->recon_add || operations->recon_ralph){
 		if (header->numberOfChannels > 1){
 			fprintf(stderr, "Cannot compute recon SNR with multi-channel data\n");
 			return 4;

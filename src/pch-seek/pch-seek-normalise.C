@@ -94,10 +94,10 @@ void pch_seek_normalise_agl_mean(float* amplitudes, int ndat, int nrun){
 	j=0;
 	k=0;
 	// This code isn't very optimised as I copied it directly from ralph/andrew's code.
-	for ( int i = 1; i < ndat; i++){
+	for ( int i = 0; i < ndat; i++){
 		if(fabs(amplitudes[i]) > 0.000001){
-			l++;
 			small_block_array[l]=amplitudes[i];
+			l++;
 		}
 		j++;
 		if(j==nrun || i>=(ndat-1)){
@@ -135,31 +135,6 @@ void pch_seek_normalise_agl_mean(float* amplitudes, int ndat, int nrun){
 				}
 			}
 
-			/*
-			zapped=0;
-			for(int x = 0; x < 3; x++){
-				if(rms> 0){
-					// zap things more than 3 sigma away.
-					for(int y=1; y < l; y++){
-						if((small_block_array[y]-mean) > 3*rms){
-							zapped++;
-							small_block_array[y]=0;
-						}
-					}
-				}
-				//				if(zapped > 0.1*nrun) break;
-				mean=0;
-				rms=0;
-				if(l > 128){
-					meanrms(small_block_array,l,&mean,&rms);
-				} else {
-					if(k > 1){
-						mean=rmean[k-1];
-						rms=rrms[k-1];
-					}
-				}
-			}
-			*/
 			rmean[k]=mean;
 			rrms[k]=rms;
 			k++;
