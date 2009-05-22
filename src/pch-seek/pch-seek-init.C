@@ -38,6 +38,7 @@ void pch_seek_init_operations(pch_seek_operations_t* operations){
 	operations->nharms=0;
 	strcpy(operations->prdfile,"out.prd");
 	operations->amp_thresh=5;
+	operations->hfold_bonus_factor=0.2;
 	strcpy(operations->giantfile,"giant.sp");
 
 	strcpy(operations->presto_fft_file,"presto");

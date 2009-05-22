@@ -26,7 +26,9 @@ typedef struct pch_seek_operations{
 	char harmfold_simple;
 	char search_amplitudes;
 	char recon_add;
+	char recon_ralph;
 	char write_prd;
+	char append_output;
 	char giant_search;
 	char write_presto_fft;
 
@@ -39,6 +41,7 @@ typedef struct pch_seek_operations{
 	char presto_fft_file[512];
 	char giantfile[512];
 	float amp_thresh;
+	float hfold_bonus_factor;
 } pch_seek_operations_t;
 
 
@@ -54,8 +57,8 @@ void pch_seek_init_operations(pch_seek_operations_t* ops);
 /* pch-seek-output.C */
 void pch_seek_dump(float* data, int len, float xscale, char* filename);
 void pch_seek_histogram(float* data, int len, int hist_bins, char* filename);
-void pch_seek_write_prd(char* filename, float** freq, float** spec, float** recon, int* ncand, int* harms, int nharm, psrxml* header);
 void pch_seek_write_presto_fft(char* filestem, fftwf_complex* spectrum, int ncomplex, psrxml* header);
+void pch_seek_write_prd(char* filename, float** freq, float** spec, float** recon, int* ncand, int* harms, int nharm, psrxml* header, char append);
 
 /* pch-seek-fourier.C */
 void pch_seek_fourier_r2c(float* timeseries, int npoints);
@@ -78,6 +81,7 @@ float** pch_seek_search_spectrum(float* amplitudes, int ndat, float xscale, floa
 
 /* pch-seek-recon.C */
 float pch_seek_recon_add(float* amplitudes, float* phases, int ndat, int foldval, float freq, float xscale);
+float pch_seek_recon_ralph(float* amplitudes, float* phases, int ndat, int foldval, float freq, float xscale);
 
 /* pch-seek-singlepulse.C */
 void pch_seek_singlepulse(float* timeseries, int npts, float thresh, float dm, int max_scrunch,int beam, char* filename);

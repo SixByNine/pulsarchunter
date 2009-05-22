@@ -30,10 +30,13 @@ float** pch_seek_read_file(psrxml* header, int scrunch_factor){
 	int chan,samp;
 	int start,nsamps;
 	char swap_chans;
-	int nbytes_to_read;
+	long long int nbytes_to_read;
 	int read,blocks_read;
 	int float_block_length;
 	int update_on_block;
+	float *scrunch_remainder;
+	int *scrunch_start, scrunch_samp,incr;
+	int *scrunch_ex_tot;
 	long long int totbytes;
 	dataFile* file;
 
@@ -43,11 +46,16 @@ float** pch_seek_read_file(psrxml* header, int scrunch_factor){
 	fprintf(stdout,"Reading data file '%s'.\n",file->filename);
 	if(file->bitsPerSample < 8){
 		float_block_length=file->blockLength * (8/file->bitsPerSample);
-		nbytes_to_read = header->numberOfSamples * header->numberOfChannels / (8/file->bitsPerSample);
+		nbytes_to_read = (long long int)header->numberOfSamples * (long long int)header->numberOfChannels / (long long int)(8/file->bitsPerSample);
 	} else {
 		float_block_length=file->blockLength / (file->bitsPerSample/8);
-	        nbytes_to_read = header->numberOfSamples * (file->bitsPerSample / 8) * header->numberOfChannels;
+	        nbytes_to_read = (long long int)header->numberOfSamples * (long long int)(file->bitsPerSample / 8) * (long long int)header->numberOfChannels;
 	}
+
+//	if ((float_block_length/header->numberOfChannels) % scrunch_factor){
+//		fprintf(stderr,"Cannot scrunch by %d as it is not a factor of the block size of %d samples\n",scrunch_factor,float_block_length/header->numberOfChannels);
+//		exit(1);
+//	}
 
 
 	//	the byte_array stores one block of byte data
@@ -58,6 +66,14 @@ float** pch_seek_read_file(psrxml* header, int scrunch_factor){
 	block_chan_array = (float**)malloc(sizeof(float*) * header->numberOfChannels);
 	//      the output store the channel time-series
 	output = (float**) malloc(sizeof(float*)*header->numberOfChannels);
+	scrunch_remainder = (float*)malloc(sizeof(float) * header->numberOfChannels);
+	scrunch_start = (int*)malloc(sizeof(int) * header->numberOfChannels);
+	scrunch_ex_tot=  (int*)malloc(sizeof(int) * header->numberOfChannels);
+
+	
+
+
+	fprintf(stdout,"Total bytes to read: %lld (%lld blocks)\n",nbytes_to_read,nbytes_to_read/(long long int)file->blockLength+1);
 
 	// now try and malloc enough memory for the entire file!
 	// we malloc for an extra two samples to cover for the later transform to a complex spectrum
@@ -65,12 +81,15 @@ float** pch_seek_read_file(psrxml* header, int scrunch_factor){
 	totbytes = (long long int)header->numberOfChannels*(long long int)sizeof(float)*(long long int)(header->numberOfSamples+2) / (long long int)scrunch_factor; 
 	fprintf(stdout,"Trying to malloc %lld bytes (%d MB) for the data.\n", totbytes, totbytes/1048576);
 	for (chan=0; chan < header->numberOfChannels; chan++){
-		output[chan] = (float*)malloc(sizeof(float)*(header->numberOfSamples+2)/scrunch_factor);
+		output[chan] = (float*)malloc(sizeof(float)*(header->numberOfSamples/scrunch_factor+2));
 		if(output[chan]==NULL){
 			// we probably ran out of memory...
 			fprintf(stderr,"Could not allocate enough memory\n");
 			return NULL;
 		}
+		scrunch_start[chan]=0;
+		scrunch_remainder[chan]=0;
+		scrunch_ex_tot[chan]=0;
 	}
 
         if (scrunch_factor > 1) fprintf(stdout,"Tscrunching data by a factor of %d.\n", scrunch_factor);
@@ -81,6 +100,7 @@ float** pch_seek_read_file(psrxml* header, int scrunch_factor){
 
 	start = 0;
 	blocks_read=0;
+	totbytes=0;
 	update_on_block = (int)(1024*1024*10/file->blockLength);
 	if(update_on_block < 1)update_on_block=1;
 	// we now try and read the entire file, 'block' at a time into the float arrays.
@@ -93,7 +113,7 @@ float** pch_seek_read_file(psrxml* header, int scrunch_factor){
 			nbytes_to_read = 0;
 			break;
 		}
-		nbytes_to_read -= read;
+		nbytes_to_read -= (long long int)read;
 
 		if(file->bitsPerSample < 8){
 			nsamps = (read * (8/file->bitsPerSample)) / header->numberOfChannels;
@@ -104,29 +124,62 @@ float** pch_seek_read_file(psrxml* header, int scrunch_factor){
 
 		unpackToChannels(float_array,block_chan_array,header->numberOfChannels,nsamps);	
 
+		incr=0;
 		// Now I do a memcopy. this is probably not the most efficient way to do it but I don't want to have to transform the entire file.
 		for (chan=0; chan < header->numberOfChannels; chan++){
 			if(scrunch_factor > 1){
-				for(samp=0;samp<nsamps;samp++){					
-					if(!(samp%scrunch_factor))block_chan_array[chan][samp/scrunch_factor]=0;
-					block_chan_array[chan][samp/scrunch_factor] += block_chan_array[chan][samp];
+				incr=0;
+				if(scrunch_start[chan] != 0){
+					block_chan_array[chan][0]=scrunch_remainder[chan];
 				}
+
+				for(samp=0;samp<nsamps;samp++){					
+					scrunch_samp = samp+scrunch_start[chan];
+					if(!(scrunch_samp%scrunch_factor))block_chan_array[chan][scrunch_samp/scrunch_factor]=0;
+					block_chan_array[chan][scrunch_samp/scrunch_factor] += block_chan_array[chan][samp];
+				}
+				scrunch_start[chan] = (scrunch_samp+1)%scrunch_factor;
+				scrunch_ex_tot[chan] += (samp)%scrunch_factor;
+				if(scrunch_ex_tot[chan] >= scrunch_factor){
+					// If we started with a 'bit left over' and now we don't
+					// then we have completely filled one extra output bin
+					// therefore increment by an extra 1 bin.
+					incr=1;
+					scrunch_ex_tot[chan] -= scrunch_factor;
+				}
+				
+				scrunch_remainder[chan] = block_chan_array[chan][scrunch_samp/scrunch_factor];
+			//	printf("\nSS=%d SR=%f\n",scrunch_start[chan],scrunch_remainder[chan]);
+
 			}
-			memcpy(output[chan]+start,block_chan_array[chan], nsamps*sizeof(float)/scrunch_factor);
+		//	printf("\nstart=%d fs= %f\n",start,block_chan_array[chan][0]);
+			memcpy(output[chan]+start,block_chan_array[chan], ((int)(nsamps/scrunch_factor) + incr)*sizeof(float));
+		//	printf("samp = %d out = %f  ns=%d  cps=%d\n",start*scrunch_factor,output[chan][start], nsamps,((int)(nsamps/scrunch_factor))*sizeof(float));
 		}
-		start+=nsamps/scrunch_factor;
+		totbytes+=(long long int)nsamps;
+		start+=nsamps/scrunch_factor + incr;
 		blocks_read++;
 		if(!(blocks_read % update_on_block)){	
-			fprintf(stdout,"\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-			fprintf(stdout,"\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-			fprintf(stdout,"Read %04d data blocks, %09d samples",blocks_read, start);
+			fprintf(stdout,"\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+			fprintf(stdout,"\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+			fprintf(stdout,"Read %04d data blocks, %09d samples",blocks_read, start*scrunch_factor);
+			if(scrunch_factor>1){
+				fprintf(stdout,", scr %09d samples",start);
+			}
+//			fprintf(stdout,"\n                       %09d  %d %d\n",totbytes,scrunch_ex_tot[0],scrunch_start[0]);
+
 			fflush(stdout);
 		}
 	}
-	fprintf(stdout,"\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-	fprintf(stdout,"\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	fprintf(stdout,"\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	fprintf(stdout,"\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 
-	fprintf(stdout,"Read %04d data blocks, %09d samples\n",blocks_read, start);
+	fprintf(stdout,"Read %04d data blocks, %09d samples",blocks_read, start*scrunch_factor);
+	if(scrunch_factor>1){
+		fprintf(stdout,", scr %09d samples",start);
+	}
+	fprintf(stdout,"\n");
+	printf("totsamp=%lld\n",totbytes);
 
 
 	// these frees should match the ones above except for the 'output' array.

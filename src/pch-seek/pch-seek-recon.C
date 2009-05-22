@@ -5,7 +5,61 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <complex>
+#include <fftw3.h>
 #define PI 3.14159265
+
+float pch_seek_recon_ralph(float* amplitudes, float* phases, int ndat, int foldval, float freq, float xscale){
+
+	float bin0;
+	float peak;
+	int harmmax,i,ifun;
+	fftwf_complex* fft;
+	fftwf_plan plan;
+
+	peak = -10000.0f;
+	bin0 = ((freq/xscale)/foldval);
+
+	harmmax = ndat/(int)(bin0);
+	
+	if (foldval > harmmax) foldval = harmmax;
+
+	fft = (fftwf_complex*)fftwf_malloc(sizeof(fftwf_complex)*(foldval*2+1));
+
+	fft[0][0] = 0;
+	fft[0][1] = 0;
+	for (i=0; i < foldval; i++){
+		ifun = (int)((bin0*(i+1)+0.5));
+
+		fft[i+1][0] = amplitudes[ifun]*cos(phases[ifun]);
+		fft[i+1][1] = amplitudes[ifun]*sin(phases[ifun]);
+		// make the mirror the congrugate to make the transform real.
+		fft[(foldval*2-i)][0] = fft[i+1][0];
+		fft[(foldval*2-i)][1] = -fft[i+1][1];
+
+	}
+	plan = fftwf_plan_dft_1d(foldval*2+1, fft, fft, FFTW_BACKWARD, FFTW_ESTIMATE);
+
+	fftwf_execute(plan);
+
+
+	for (i=0; i < foldval*2; i++){
+	//	printf("%f %f\n",fft[i][0],fft[i][1]);
+		if(fft[i][0] > peak)peak=fft[i][0];
+	}
+	//printf("\n");
+
+
+
+
+	fftwf_destroy_plan(plan);
+
+
+	fftwf_free(fft);
+
+	return peak/sqrt(foldval);
+
+}
 
 float pch_seek_recon_add(float* amplitudes, float* phases, int ndat, int foldval, float freq, float xscale){
 

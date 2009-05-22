@@ -72,34 +72,65 @@ void pch_seek_write_presto_fft(char* filestem, fftwf_complex* spectrum, int ncom
 	
 	FILE* file;
 	int ret;
+	unsigned long long mjdfrac;
 	char* filename;
+	char angle[128];
 
 	filename = (char*) malloc(sizeof(char) * (strlen(filestem)+5));
 	sprintf(filename,"%s.fft",filestem);
 	file=fopen(filename,"w");
 	if (file==NULL){
-		fprintf(stderr,"Error opening presto fft binary file '%s'.\nErr: %d, %s",filename,errno,strerror(errno));
+		fprintf(stderr,"Error opening presto fft binary file '%s'.\nErr: %d, %s\n",filename,errno,strerror(errno));
 		exit(1);
 	}
 	ret=fwrite(spectrum,sizeof(fftwf_complex),ncomplex,file);
 	if (ret != ncomplex){
-		fprintf(stderr,"Error writing raw spectrum to presto fft binary file '%s'.\nErr: %d, %s",filename,errno,strerror(errno));
+		fprintf(stderr,"Error writing raw spectrum to presto fft binary file '%s'.\nErr: %d, %s\n",filename,errno,strerror(errno));
 		exit(1);
 	}
 	fclose(file);
-	sprintf(filename,"%s.hdr",filestem);
+	sprintf(filename,"%s.inf",filestem);
 	file=fopen(filename,"w");
 	if (file==NULL){
-		fprintf(stderr,"Error opening presto header file '%s'!\nErr: %d, %s",filename,errno,strerror(errno));
+		fprintf(stderr,"Error opening presto header file '%s'!\nErr: %d, %s\n",filename,errno,strerror(errno));
 		exit(1);
 	}
 	/*
-	 * @todo: Add in the header parameters required by presto!
+	 * Convert from psrxml headers to presto inf file!
 	 */
+	fprintf(file," Data file name without suffix          =  %s\n",filestem);
+	fprintf(file," Telescope used                         =  %s\n",header->telescope.name);
+	fprintf(file," Instrument used                        =  %s\n",header->receiverIdentifyingString);
+	fprintf(file," Object being observed                  =  %s\n",header->sourceName);
+	deg2hms(header->startCoordinate.ra,angle,4);
+	fprintf(file," J2000 Right Ascension (hh:mm:ss.ssss)  =  %s\n",angle);
+	deg2sex(header->startCoordinate.dec,angle,4);
+	fprintf(file," J2000 Declination     (dd:mm:ss.ssss)  =  %s\n",angle);
+
+	fprintf(file," Data observed by                       =  %s\n",header->observerName);
+	mjdfrac = 1000000000000000LL*(header->timeToFirstSample/(double)8.64e13);
+	fprintf(file," Epoch of observation (MJD)             =  %u.%015llu\n",header->mjdObs,mjdfrac);
+	fprintf(file," Barycentered?           (1=yes, 0=no)  =  0\n");
+	fprintf(file," Number of bins in the time series      =  %u\n",header->numberOfSamples);
+	fprintf(file," Width of each time series bin (sec)    =  %lf\n",header->currentSampleInterval);
+	fprintf(file," Any breaks in the data? (1=yes, 0=no)  =  0\n");
+	fprintf(file," Type of observation (EM band)          =  Radio\n");
+	fprintf(file," Beam diameter (arcsec)                 =  0\n");
+	fprintf(file," Dispersion measure (cm-3 pc)           =  %f\n",header->referenceDm);
+	/*
+	 * Here there are only 1 chan per file!
+	 */
+	fprintf(file," Central freq of low channel (Mhz)      =  %lf\n",header->centreFreqCh1);
+	fprintf(file," Total bandwidth (Mhz)                  =  %lf\n",header->freqOffset);
+	fprintf(file," Number of channels                     =  1\n");
+	fprintf(file," Channel bandwidth (Mhz)                =  %lf\n",header->freqOffset);
+	fprintf(file," Data analyzed by                       =  NA\n");
+	fprintf(file," Any additional notes:\n");
+	fprintf(file,"    FFT'd by pch-seek using fftw3\n");
 	fclose(file);
 }
 
-void pch_seek_write_prd(char* filename, float** freq, float** spec, float** recon, int* ncand, int* harms, int nharm, psrxml* header){
+void pch_seek_write_prd(char* filename, float** freq, float** spec, float** recon, int* ncand, int* harms, int nharm, psrxml* header,char append){
 
 	int maxncand=0;
 	int ifold;
@@ -109,7 +140,11 @@ void pch_seek_write_prd(char* filename, float** freq, float** spec, float** reco
 
 	FILE *file;
 
-	file = fopen(filename, "w");
+	if(append){
+		file = fopen(filename, "a");
+	} else {
+		file = fopen(filename, "w");
+	}
 
 	indexes = (int**)malloc(sizeof(int*)*nharm);
 
@@ -187,38 +222,39 @@ void pch_seek_write_prd(char* filename, float** freq, float** spec, float** reco
 ##END HEADER##
 
 */
+	if (!append){
 
-	fprintf(file,"##BEGIN HEADER##\n");
-	fprintf(file,"SOURCEID = %s\n",header->sourceName);
-	fprintf(file,"FREF = %f MHz\n",header->centreFreqCh1);
-	fprintf(file,"TSTART = %f\n",header->mjdObs);
-	fprintf(file,"TELESCOPE = %s\n",header->telescope.name);
+		fprintf(file,"##BEGIN HEADER##\n");
+		fprintf(file,"SOURCEID = %s\n",header->sourceName);
+		fprintf(file,"FREF = %f MHz\n",header->centreFreqCh1);
+		fprintf(file,"TSTART = %f\n",header->mjdObs);
+		fprintf(file,"TELESCOPE = %s\n",header->telescope.name);
 
-	fprintf(file,"RAJ = %f\n",header->startCoordinate.ra);
-	fprintf(file,"DECJ = %f\n",header->startCoordinate.dec);
+		fprintf(file,"RAJ = %f\n",header->startCoordinate.ra);
+		fprintf(file,"DECJ = %f\n",header->startCoordinate.dec);
 
-	fprintf(file,"TSAMP = %f us\n",header->currentSampleInterval);
-	fprintf(file,"PROGRAM = %s\n",PACKAGE_NAME);
-	fprintf(file,"VERSION = %f\n",PACKAGE_VERSION);
+		fprintf(file,"TSAMP = %f us\n",header->currentSampleInterval);
+		fprintf(file,"PROGRAM = %s\n",PACKAGE_NAME);
+		fprintf(file,"VERSION = %f\n",PACKAGE_VERSION);
 
-	fprintf(file,"HARM_FOLDS =");
-	for(ifold = 0; ifold < nharm; ifold++){
-		fprintf(file," %d",harms[ifold]);
+		fprintf(file,"HARM_FOLDS =");
+		for(ifold = 0; ifold < nharm; ifold++){
+			fprintf(file," %d",harms[ifold]);
+		}
+		fprintf(file,"\n");
+
+		if(recon==NULL){
+			fprintf(file,"COLS = SNR_SPEC PERIOD\n");
+
+		} else {
+			fprintf(file,"COLS = SNR_SPEC SNR_RECON PERIOD\n");
+
+		}
+
+
+
+		fprintf(file,"##END HEADER##\n");
 	}
-	fprintf(file,"\n");
-
-	if(recon==NULL){
-		fprintf(file,"COLS = SNR_SPEC PERIOD\n");
-
-	} else {
-		fprintf(file,"COLS = SNR_SPEC SNR_RECON PERIOD\n");
-
-	}
-
-
-
-	fprintf(file,"##END HEADER##\n");
-
 
 	fprintf(file," DM:% 11.6f      AC:% 11.6f      AD:% 11.6f\n",header->referenceDm,0,0);
 

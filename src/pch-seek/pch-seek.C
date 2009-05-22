@@ -5,6 +5,7 @@
 #include <psrxml.h>
 #include <fftw3.h>
 #include <getopt.h>
+#include <math.h>
 
 int set_options(struct option* long_opt, int* opt_flag);
 void pch_seek_print_usage();
@@ -25,7 +26,7 @@ int main(int argc, char** argv){
 
 	float** data_array;
 	psrxml* header;
-	const char* args = "dhprT:G:H:";
+	const char* args = "Adhprt:T:G:H:";
 	char c;
 	FILE *dmfile;
 	int dmtrials_size;
@@ -33,6 +34,7 @@ int main(int argc, char** argv){
 	int long_opt_idx = 0;
 	int opt_flag = 0;
 	int scrunch_factor=1;
+	int fft_size = -1;
 	struct option long_opt[256];
 	pch_seek_operations_t operations;
 
@@ -100,6 +102,10 @@ int main(int argc, char** argv){
 			case 0x00000021: //harmfold-simple
 				operations.harmfold_simple=1;
 				break;
+
+			case 0x00000031:
+				operations.recon_ralph=1;
+				break;
 			case 0x00000101: //twiddle-amplitudes
 				operations.twiddle_amplitudes=1;
 				break;
@@ -111,12 +117,23 @@ int main(int argc, char** argv){
 				operations.write_presto_fft=1;
 				strcpy(operations.presto_fft_file,optarg);
 				break;
+
+			case 0x00000121: // amp-thresh
+				operations.amp_thresh=atof(optarg);
+				break;
+			case 0x00000122: // hfold-bonus-factor
+				operations.hfold_bonus_factor=atof(optarg);
+				break;
+
+
+
 			case 0x00000201: //seach-chans
 				operations.search_chans=1;
 				break;
 			case 0x00000202: //tscrunch
-				scrunch_factor = atof(optarg);
+				scrunch_factor = atol(optarg);
 				break;
+
 
 
 			default:
@@ -135,6 +152,10 @@ int main(int argc, char** argv){
 						fprintf(stderr,"Warning: FFTW was not compiled in multi-threaded mode.\n");
 #endif
 						break;
+					case 't': //fft-size
+						fft_size = atol(optarg);
+						break;
+
 
 					case 'd': // dm file
 						dmfile = fopen(optarg,"r");
@@ -174,8 +195,11 @@ int main(int argc, char** argv){
 							}
 							operations.nharms=i;
 						}
-						break;
 
+						break;
+					case 'A':
+						operations.append_output=1;
+						break;
 				}
 		}
 		opt_flag=0;
@@ -190,6 +214,16 @@ int main(int argc, char** argv){
 	}
 
 	readPsrXml(header, argv[optind]);
+
+	if(fft_size > 1){
+		// we pretend the file is shorter than it is to force the size to be sensible
+		int read_length = (int)pow(2,fft_size)*scrunch_factor;
+		if (read_length < header->numberOfSamples){
+			header->numberOfSamples = read_length;
+			header->actualObsTime=read_length*header->currentSampleInterval;
+		}
+
+	}
 
 	/*
 	 * If we are using a 'dm file' to specify some dispersion measures to use
@@ -361,6 +395,11 @@ int set_options(struct option* long_opt, int* opt_flag){
 	long_opt[long_opt_idx].has_arg = no_argument;
 	long_opt[long_opt_idx].flag = NULL;
 	long_opt[long_opt_idx++].val = 'r';
+	long_opt[long_opt_idx].name = "recon-ralph";
+	long_opt[long_opt_idx].has_arg = no_argument;
+	long_opt[long_opt_idx].flag = opt_flag;
+	long_opt[long_opt_idx++].val = 0x00000031;
+
 
 
 	long_opt[long_opt_idx].name = "twiddle-amps";
@@ -384,6 +423,22 @@ int set_options(struct option* long_opt, int* opt_flag){
 	long_opt[long_opt_idx].has_arg = required_argument;
 	long_opt[long_opt_idx].flag = opt_flag;
 	long_opt[long_opt_idx++].val = 0x00000112;
+	long_opt[long_opt_idx].name = "append-output";
+	long_opt[long_opt_idx].has_arg = no_argument;
+	long_opt[long_opt_idx].flag = NULL;
+	long_opt[long_opt_idx++].val = 'A';
+
+
+	long_opt[long_opt_idx].name = "amp-thresh";
+	long_opt[long_opt_idx].has_arg = required_argument;
+	long_opt[long_opt_idx].flag = opt_flag;
+	long_opt[long_opt_idx++].val = 0x00000121;
+
+	long_opt[long_opt_idx].name = "hfold-bonus-factor";
+	long_opt[long_opt_idx].has_arg = required_argument;
+	long_opt[long_opt_idx].flag = opt_flag;
+	long_opt[long_opt_idx++].val = 0x00000122;
+
 
 
 	long_opt[long_opt_idx].name = "giant-search";
@@ -402,6 +457,13 @@ int set_options(struct option* long_opt, int* opt_flag){
 	long_opt[long_opt_idx].has_arg = required_argument;
 	long_opt[long_opt_idx].flag = opt_flag;
 	long_opt[long_opt_idx++].val = 0x00000202;
+
+
+	long_opt[long_opt_idx].name = "fft-size";
+	long_opt[long_opt_idx].has_arg = required_argument;
+	long_opt[long_opt_idx].flag = NULL;
+	long_opt[long_opt_idx++].val = 't';
+
 
 
 
