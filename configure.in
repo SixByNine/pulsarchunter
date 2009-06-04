@@ -67,6 +67,6 @@ AC_SUBST(PSRXML_CFLAGS)
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 
 AM_CONFIG_HEADER([config.h])
-AC_CONFIG_FILES([Makefile src/Makefile src/pch-tune/Makefile src/pch-seek/Makefile src/barycentre-sla/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile src/pch-tune/Makefile src/pch-seek/Makefile src/barycentre-sla/Makefile src/pch-dmcomp/Makefile])
 
 AC_OUTPUT

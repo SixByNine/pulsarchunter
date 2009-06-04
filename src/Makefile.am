@@ -1,1 +1,1 @@
-SUBDIRS=barycentre-sla pch-tune pch-seek
+SUBDIRS=barycentre-sla pch-tune pch-seek pch-dmcomp
