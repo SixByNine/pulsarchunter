@@ -141,8 +141,12 @@ float** pch_seek_read_file(psrxml* header, int scrunch_factor){
 
 				for(samp=0;samp<nsamps;samp++){					
 					scrunch_samp = samp+scrunch_start[chan];
-					if(!(scrunch_samp%scrunch_factor))block_chan_array[chan][scrunch_samp/scrunch_factor]=0;
-					block_chan_array[chan][scrunch_samp/scrunch_factor] += block_chan_array[chan][samp];
+					if(samp!=0){
+						if(!(scrunch_samp%scrunch_factor)){
+							block_chan_array[chan][scrunch_samp/scrunch_factor]=0;
+						}
+						block_chan_array[chan][scrunch_samp/scrunch_factor] += block_chan_array[chan][samp];
+					}
 				}
 				scrunch_start[chan] = (scrunch_samp+1)%scrunch_factor;
 				scrunch_ex_tot[chan] += (samp)%scrunch_factor;
@@ -155,6 +159,7 @@ float** pch_seek_read_file(psrxml* header, int scrunch_factor){
 				}
 				
 				scrunch_remainder[chan] = block_chan_array[chan][scrunch_samp/scrunch_factor];
+				
 			//	printf("\nSS=%d SR=%f\n",scrunch_start[chan],scrunch_remainder[chan]);
 
 			}
