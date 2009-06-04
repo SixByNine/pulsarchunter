@@ -33,7 +33,7 @@ int pch_seek_fourier_size(int npts, bool pow2only){
 		val = 729*pch_seek_fourier_size(npts/729,true);
 		pch_seek_fourier_size_test_slack(npts,val,&bestsize,&bestslack);
 	}
-	val = 16384;
+	val = 128;
 	while ( val <= npts ){
 		val *=2 ;
 	}
