@@ -3,7 +3,13 @@
 #include <string.h>
 #include <math.h>
 
+#define FFT_MALLOC malloc
+#if HAVE_CONFIG_H
+#if HAVE_FFTW
 #include <fftw3.h>
+#define FFT_MALLOC fftwf_malloc
+#endif
+#endif
 
 #include "pch-seek.h"
 
@@ -81,7 +87,7 @@ float** pch_seek_read_file(psrxml* header, int scrunch_factor){
 	totbytes = (long long int)header->numberOfChannels*(long long int)sizeof(float)*(long long int)(header->numberOfSamples+2) / (long long int)scrunch_factor; 
 	fprintf(stdout,"Trying to malloc %lld bytes (%d MB) for the data.\n", totbytes, totbytes/1048576);
 	for (chan=0; chan < header->numberOfChannels; chan++){
-		output[chan] = (float*)malloc(sizeof(float)*(header->numberOfSamples/scrunch_factor+2));
+		output[chan] = (float*)FFT_MALLOC(sizeof(float)*(header->numberOfSamples/scrunch_factor+2));
 		if(output[chan]==NULL){
 			// we probably ran out of memory...
 			fprintf(stderr,"Could not allocate enough memory\n");

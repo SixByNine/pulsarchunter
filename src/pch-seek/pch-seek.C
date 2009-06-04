@@ -133,6 +133,10 @@ int main(int argc, char** argv){
 			case 0x00000202: //tscrunch
 				scrunch_factor = atol(optarg);
 				break;
+			case 0x00000203: //tscrunch
+				fft_size = atol(optarg);
+				break;
+
 
 
 
@@ -153,7 +157,7 @@ int main(int argc, char** argv){
 #endif
 						break;
 					case 't': //fft-size
-						fft_size = atol(optarg);
+						fft_size = (int)pow(2,atol(optarg));
 						break;
 
 
@@ -217,7 +221,8 @@ int main(int argc, char** argv){
 
 	if(fft_size > 1){
 		// we pretend the file is shorter than it is to force the size to be sensible
-		int read_length = (int)pow(2,fft_size)*scrunch_factor;
+		int read_length = (int)fft_size*scrunch_factor;
+		printf("Only using first %d samples of file\n",read_length);
 		if (read_length < header->numberOfSamples){
 			header->numberOfSamples = read_length;
 			header->actualObsTime=read_length*header->currentSampleInterval;
@@ -459,10 +464,16 @@ int set_options(struct option* long_opt, int* opt_flag){
 	long_opt[long_opt_idx++].val = 0x00000202;
 
 
-	long_opt[long_opt_idx].name = "fft-size";
+	long_opt[long_opt_idx].name = "fft-pow2";
 	long_opt[long_opt_idx].has_arg = required_argument;
 	long_opt[long_opt_idx].flag = NULL;
 	long_opt[long_opt_idx++].val = 't';
+
+	long_opt[long_opt_idx].name = "fft-size";
+	long_opt[long_opt_idx].has_arg = required_argument;
+	long_opt[long_opt_idx].flag = opt_flag;
+	long_opt[long_opt_idx++].val = 0x00000203;
+
 
 
 
