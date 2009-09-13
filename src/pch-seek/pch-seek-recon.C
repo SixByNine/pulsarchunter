@@ -61,10 +61,10 @@ float pch_seek_recon_ralph(float* amplitudes, float* phases, int ndat, int foldv
 
 }
 
-float pch_seek_recon_add(float* amplitudes, float* phases, int ndat, int foldval, float freq, float xscale){
+float pch_seek_recon_add(float* amplitudes, float* phases, int ndat, int foldval, float freq, float xscale, float spectral_snr){
 
 	int samp,bin;
-	float phase,amp,re,im,s_re,s_im;
+	float phase,amp,re,im,s_re,s_im,sum;
 	double *ph_arr, *am_arr, *idx;
 	double p[2];
 	int m;
@@ -82,10 +82,12 @@ float pch_seek_recon_add(float* amplitudes, float* phases, int ndat, int foldval
 
 	s_re=0;
 	s_im=0;
+	sum=0;
 	for (int f=1; f <= foldval; f++){
-		bin=(int)((samp*f)/foldval);
+		bin=(int)((samp*f)/(float)foldval + 0.5);
 		phase = phases[bin];
 		amp=amplitudes[bin];
+		sum+=amp;
 		// if the amplitude is less than 0
 		// then it can cause a +ve increase 
 		// if the phase is correct.
@@ -123,7 +125,10 @@ float pch_seek_recon_add(float* amplitudes, float* phases, int ndat, int foldval
 	free(am_arr);
 	free(idx);
 
-	return (sqrt(s_re*s_re + s_im*s_im)+bac) / sqrt(foldval);
+	float ret = ((sqrt(s_re*s_re + s_im*s_im)+bac) / sqrt(foldval));
+	if(ret < 0) ret=0;
+	return ret;
+//	return spectral_snr*((sqrt(s_re*s_re + s_im*s_im)) / foldval);
 
 
 

@@ -26,7 +26,7 @@ int main(int argc, char** argv){
 
 	float** data_array;
 	psrxml* header;
-	const char* args = "Adhprt:T:G:H:";
+	const char* args = "Adhprt::T:G:H:";
 	char c;
 	FILE *dmfile;
 	int dmtrials_size;
@@ -102,6 +102,10 @@ int main(int argc, char** argv){
 			case 0x00000021: //harmfold-simple
 				operations.harmfold_simple=1;
 				break;
+			case 0x00000022: //harmfold-smart
+				operations.harmfold_smart=1;
+				break;
+
 
 			case 0x00000031:
 				operations.recon_ralph=1;
@@ -157,7 +161,11 @@ int main(int argc, char** argv){
 #endif
 						break;
 					case 't': //fft-size
-						fft_size = (int)pow(2,atol(optarg));
+						if(optarg){
+							fft_size = (int)pow(2,atol(optarg));
+						} else {
+							fft_size = 0; //auto-trim
+						}
 						break;
 
 
@@ -214,10 +222,19 @@ int main(int argc, char** argv){
 
 	if (optind >= argc) {
 		printf("Error: Need a psrxml file to work on... (use --help for options)\n");
+		for(int  i=0; i < long_opt_idx ; i++){
+			printf("%s\n",long_opt[i].name);
+		}
 		exit(1);
 	}
 
 	readPsrXml(header, argv[optind]);
+
+
+	if(fft_size == 0){
+		// auto-use a good size fft!
+		fft_size=pch_seek_fourier_size(header->numberOfSamples,0);
+	}
 
 	if(fft_size > 1){
 		// we pretend the file is shorter than it is to force the size to be sensible
@@ -391,6 +408,12 @@ int set_options(struct option* long_opt, int* opt_flag){
 	long_opt[long_opt_idx].flag = opt_flag;
 	long_opt[long_opt_idx++].val = 0x00000021;
 
+	long_opt[long_opt_idx].name = "harmfold-smart";
+	long_opt[long_opt_idx].has_arg = no_argument;
+	long_opt[long_opt_idx].flag = opt_flag;
+	long_opt[long_opt_idx++].val = 0x00000022;
+
+
 	long_opt[long_opt_idx].name = "harm-folds";
 	long_opt[long_opt_idx].has_arg = required_argument;
 	long_opt[long_opt_idx].flag = NULL;
@@ -465,7 +488,7 @@ int set_options(struct option* long_opt, int* opt_flag){
 
 
 	long_opt[long_opt_idx].name = "fft-pow2";
-	long_opt[long_opt_idx].has_arg = required_argument;
+	long_opt[long_opt_idx].has_arg = optional_argument;
 	long_opt[long_opt_idx].flag = NULL;
 	long_opt[long_opt_idx++].val = 't';
 

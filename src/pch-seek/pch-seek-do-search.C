@@ -107,6 +107,7 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 		if(operations->normalise_powerlaw)printf(" - Normalising amplitudes (powerlaw fitting method)\n");
 		if(operations->dump_normalised)printf(" - Dump normalised amplitudes\n");
 		if(operations->hist_normalised)printf(" - Histogram normalised amplitudes\n");
+		if(operations->harmfold_smart && operations->nharms > 0)printf(" - Harmonicly folding %d times (SMART method)\n",operations->nharms);
 		if(operations->harmfold_simple && operations->nharms > 0)printf(" - Harmonicly folding %d times (simple method)\n",operations->nharms);
 		if(operations->dump_harmfolds)printf(" - Dump harmonicaly folded amplitudes\n");
 		if(operations->hist_harmfolds)printf(" - Histogram harmonicaly folded amplitudes\n");
@@ -358,6 +359,17 @@ void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header
 		printf("OP[END]: Histogram normalised amplitudes\n");
 	}
 
+	if (operations->harmfold_smart && operations->nharms > 0){
+		printf("OP[START]: Harmonic folding (smart method) (H =");
+		for(int i=0; i <  operations->nharms; i++){
+			printf(" %d",operations->harmfolds[i]);
+		}
+		printf(")\n");
+		amplitude_harmfolds = pch_seek_harmfold_smart(amplitude_fscrunch,ncomplex,operations->harmfolds,operations->nharms);
+		printf("OP[END]: Harmonic folding (smart method)");
+		printf("\n");
+	}
+
 	if (operations->harmfold_simple && operations->nharms > 0){
 		printf("OP[START]: Harmonic folding (simple method) (H =");
 		for(int i=0; i <  operations->nharms; i++){
@@ -424,19 +436,6 @@ void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header
 		printf("OP[END]: Search amplitudes for SNR > %f\n",operations->amp_thresh);
 	}
 
-	if (operations->nharms > 0 && operations->hfold_bonus_factor != 0.0){
-		printf("OP[START]: Adding 'bonus' sqrt(hfold)*%f to SNR for each fold\n",operations->hfold_bonus_factor);
-		for (icand = 0; icand < ncand_amp[0]; icand++){
-			amplitude_harmfold_spectral[0][icand] += operations->hfold_bonus_factor;
-		}
-		for (ifold=0; ifold < operations->nharms; ifold++){
-			for (icand = 0; icand < ncand_amp[ifold+1]; icand++){
-				amplitude_harmfold_spectral[ifold+1][icand] += sqrt(operations->harmfolds[ifold])*operations->hfold_bonus_factor;
-			}
-		}
-		printf("OP[END]: Adding 'bonus' sqrt(hfold)*%f to SNR for each fold\n",operations->hfold_bonus_factor);
-	}
-
 	if(operations->recon_ralph){
 		printf("OP[START]: Computing Recon SNR (R.Eatough method)\n");
 		amplitude_harmfold_recon = (float**)malloc(sizeof(float*)*(operations->nharms+1));
@@ -458,19 +457,37 @@ void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header
 		amplitude_harmfold_recon = (float**)malloc(sizeof(float*)*(operations->nharms+1));
 		amplitude_harmfold_recon[0] = (float*)malloc(sizeof(float)*ncand_amp[0]);
 		for (icand = 0; icand < ncand_amp[0]; icand++){
-			amplitude_harmfold_recon[0][icand] = pch_seek_recon_add(amplitude_fscrunch, phase_spectrum, ncomplex, 1, amplitude_harmfold_freqs[0][icand],1.0/tobs);
+			amplitude_harmfold_recon[0][icand] = pch_seek_recon_add(amplitude_fscrunch, phase_spectrum, ncomplex, 1, amplitude_harmfold_freqs[0][icand],1.0/tobs,amplitude_harmfold_spectral[0][icand]);
 		}
 		for (ifold=0; ifold < operations->nharms; ifold++){
 			amplitude_harmfold_recon[ifold+1] = (float*)malloc(sizeof(float)*ncand_amp[ifold+1]);
 			for (icand = 0; icand < ncand_amp[ifold+1]; icand++){
-				amplitude_harmfold_recon[ifold+1][icand] = pch_seek_recon_add(amplitude_fscrunch, phase_spectrum, ncomplex, operations->harmfolds[ifold], amplitude_harmfold_freqs[ifold+1][icand],1.0/(operations->harmfolds[ifold]*tobs));
+				amplitude_harmfold_recon[ifold+1][icand] = pch_seek_recon_add(amplitude_fscrunch, phase_spectrum, ncomplex, operations->harmfolds[ifold], amplitude_harmfold_freqs[ifold+1][icand],1.0/(operations->harmfolds[ifold]*tobs),amplitude_harmfold_spectral[ifold+1][icand]);
 			}
 		}
 		printf("OP[END]: Computing Recon SNR (addition method)\n");
 	}
 
+	if (operations->nharms > 0 && operations->hfold_bonus_factor != 0.0){
+		printf("OP[START]: Adding 'bonus' sqrt(hfold)*%f to SNR for each fold\n",operations->hfold_bonus_factor);
+		for (icand = 0; icand < ncand_amp[0]; icand++){
+			amplitude_harmfold_spectral[0][icand] += operations->hfold_bonus_factor;
+			if (amplitude_harmfold_recon!=NULL)amplitude_harmfold_recon[0][icand] += operations->hfold_bonus_factor;
+
+		}
+		for (ifold=0; ifold < operations->nharms; ifold++){
+			for (icand = 0; icand < ncand_amp[ifold+1]; icand++){
+				amplitude_harmfold_spectral[ifold+1][icand] += sqrt(operations->harmfolds[ifold])*operations->hfold_bonus_factor;
+				if (amplitude_harmfold_recon!=NULL)amplitude_harmfold_recon[ifold+1][icand] += operations->hfold_bonus_factor;
+			}
+		}
+		printf("OP[END]: Adding 'bonus' sqrt(hfold)*%f to SNR for each fold\n",operations->hfold_bonus_factor);
+	}
+
 	if (operations->write_prd){
-		printf("OP[START]: Writing 'prd' file: '%s'\n",operations->prdfile);
+		printf("OP[START]: Writing 'prd' file: '%s'",operations->prdfile);
+		if(operations->append_output)printf(" (Appending)");
+		printf("\n");
 		int* mod_harmfolds = (int*)malloc(sizeof(int)*(operations->nharms+1));
 		// we have to add the '1' harmonic fold.
 		mod_harmfolds[0]=1;
@@ -573,7 +590,8 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 	}
 
 	if (operations->dump_harmfolds || operations->hist_harmfolds){
-		operations->harmfold_simple=1;
+		if(!operations->harmfold_simple)
+			operations->harmfold_smart=1;
 	}
 
 	if(operations->recon_add || operations->recon_ralph){
@@ -582,18 +600,19 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 			return 4;
 
 		}
-
-		operations->harmfold_simple = 1;
+		if (operations->harmfold_simple)
+			operations->harmfold_simple = 1;
 		operations->search_amplitudes=1;
 	}
 
 
 	if (operations->write_prd){
-		operations->harmfold_simple = 1;
+		if (operations->harmfold_simple)
+			operations->harmfold_simple = 1;
 		operations->search_amplitudes=1;
 	}
 
-	if (operations->harmfold_simple){
+	if (operations->harmfold_simple || operations->harmfold_smart){
 		operations->fft_input = 1;
 		operations->form_amplitudes=1;
 		if(!(operations->normalise_agl || operations->normalise_powerlaw || operations->normalise_median))operations->normalise_powerlaw=1;

@@ -24,13 +24,16 @@ void pch_seek_init_operations(pch_seek_operations_t* operations){
 	operations->normalise_agl=0;
 
 
+
+
 	operations->harmfold_simple=0;
+	operations->harmfold_smart=0;
 	operations->search_amplitudes=0;
 	operations->write_prd=0;
 	operations->write_presto_fft=0;
 	operations->recon_add=0;
 	operations->giant_search = 0;
-
+	operations->append_output=0;
 
 	operations->ndm=0;
 	operations->dmtrials=NULL;
