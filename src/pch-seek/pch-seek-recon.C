@@ -129,7 +129,7 @@ float pch_seek_recon_add(float* amplitudes, float* phases, int ndat, int foldval
 	for (int f=1; f <= foldval; f++){
 		float tmp=ph_arr[f-1];
 		ph_arr[f-1]-=(f*p[1] + p[0]);
-		printf("% 2d %f\t%f\t%f\t%f\t%d\n",f,spectral_snr,tmp,ph_arr[f-1],am_arr[f-1],(int)((samp*f)/(float)foldval + 0.5));
+//		printf("% 2d %f\t%f\t%f\t%f\t%d\n",f,spectral_snr,tmp,ph_arr[f-1],am_arr[f-1],(int)((samp*f)/(float)foldval + 0.5));
 	}
 
 	for (int f=1; f <= foldval; f++){
