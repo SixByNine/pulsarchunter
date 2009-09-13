@@ -84,7 +84,7 @@ void pch_seek_harmfold_pow_two(float* amp, int ndat, float** h, int nfolds);
 
 
 /* pch-seek-search-spec.C */
-float** pch_seek_search_spectrum(float* amplitudes, int ndat, float xscale, float threshold, int* ncand, float rms);
+float** pch_seek_search_spectrum(float* amplitudes, int ndat, float xscale, float threshold, int* ncand, float rms, float xoff);
 
 /* pch-seek-recon.C */
 float pch_seek_recon_add(float* amplitudes, float* phases, int ndat, int foldval, float freq, float xscale,float spectral_snr);

@@ -5,7 +5,7 @@
 
 #include <stdlib.h>
 
-float** pch_seek_search_spectrum(float* amplitudes, int ndat, float xscale, float threshold, int* ncand, float rms){
+float** pch_seek_search_spectrum(float* amplitudes, int ndat, float xscale, float threshold, int* ncand, float rms,float xoff){
 	
 	float** results;
 	int arrsize;
@@ -22,7 +22,7 @@ float** pch_seek_search_spectrum(float* amplitudes, int ndat, float xscale, floa
 	for (int i = 0; i < ndat; i++){
 		if(xscale*(float)i < 0.1) continue;
 		if (amplitudes[i]/rms > threshold){
-			results[0][nres] = xscale*(float)i;
+			results[0][nres] = xscale*(float)i+xoff;
 			results[1][nres] = amplitudes[i]/rms;
 			nres++;
 			if(nres > arrsize){

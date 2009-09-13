@@ -5,7 +5,7 @@
 #include <math.h>
 
 bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header);
-void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header, float* amplitude_fscrunch, float* phase_spectum);
+void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header, float* amplitude_fscrunch, float* phase_spectum, float xoff);
 
 /**
  *
@@ -46,7 +46,7 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 	float** amplitude_harmfold_freqs; // the best frequencies
 	float** amplitude_harmfold_spectral; // the best snrs
 	float** amplitude_harmfold_recon; // the best recon snrs
-	int* ncand_amp;
+	float xoff; // we might offset the x (freq) scale if we twiddle amps, for instance.
 	float tobs;
 
 	tobs=header->actualObsTime;
@@ -58,7 +58,7 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 	amplitude_spectra = (float**)malloc(sizeof(float*)*nchan);
 	phase_spectra     = (float**)malloc(sizeof(float*)*nchan);
 	complex_spectra   = (fftwf_complex**)malloc(sizeof(fftwf_complex*)*nchan);
-	ncand_amp = (int*)malloc(sizeof(int)*(operations->nharms+1));
+	xoff=0;
 	amplitude_harmfold_freqs=amplitude_harmfold_spectral=amplitude_harmfold_recon=NULL;
 	for (chan=0; chan < nchan; chan++){
 		amplitude_spectra[chan] = NULL;
@@ -190,7 +190,10 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 
 		if (operations->form_amplitudes){
 			printf("OP[START]: Form phase-amplitude spectra");
-			if (operations->twiddle_amplitudes) printf(" ('Twiddle' amplitude mode)\n");
+			if (operations->twiddle_amplitudes){
+				printf(" ('Twiddle' amplitude mode)\n");
+				xoff=-0.25/tobs;
+			}
 			else printf(" (Natural mode)\n");
 
 			// form the phase/amplitude arrays from the real-imag pairs.
@@ -266,7 +269,7 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
                         strcpy(remeber_filename,operations->prdfile);
 			for (chan=0; chan < nchan; chan++){
 				sprintf(operations->prdfile,"%s.ch%04d",remeber_filename,chan);
-				pch_seek_search_flat_spec(operations,header,amplitude_spectra[chan],phase_spectra[chan]);
+				pch_seek_search_flat_spec(operations,header,amplitude_spectra[chan],phase_spectra[chan],xoff);
 			}
 			strcpy(operations->prdfile,remeber_filename);
 		}
@@ -282,7 +285,7 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 				}
 			}
 			if(nchan>0)printf("OP[END]: Flattening in frequency\n");
-			pch_seek_search_flat_spec(operations,header,amplitude_fscrunch,phase_spectra[0]);
+			pch_seek_search_flat_spec(operations,header,amplitude_fscrunch,phase_spectra[0],xoff);
 		}
 		/*
 		 * Clean up the arrays that are left.
@@ -301,7 +304,7 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 
 	}
 }
-void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header, float* amplitude_fscrunch, float* phase_spectrum)
+void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header, float* amplitude_fscrunch, float* phase_spectrum,float xoff)
 {
 
 	int samp,chan,nchan,nsamp,ncomplex,ifold,icand;
@@ -421,15 +424,18 @@ void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header
 		rms = sqrt(rms/(float)n);
 		printf("Spectral RMS: %f\n",rms);
 
+
 		float** res;
 		// search the non-folded data
 		//float** pch_seek_search_spectrum(float* amplitudes, int ndat, float tobs, float threshold, int* ncand);
-		res=pch_seek_search_spectrum(amplitude_fscrunch,ncomplex,1.0/tobs,operations->amp_thresh,&(ncand_amp[0]),rms);
+		res=pch_seek_search_spectrum(amplitude_fscrunch,ncomplex,1.0/tobs,operations->amp_thresh,&(ncand_amp[0]),rms,xoff);
+
 		amplitude_harmfold_freqs[0]=res[0];
 		amplitude_harmfold_spectral[0]=res[1];
 		// search the folded data
 		for (ifold=0; ifold < operations->nharms; ifold++){
-			res=pch_seek_search_spectrum(amplitude_harmfolds[ifold],ncomplex,1.0/(operations->harmfolds[ifold]*tobs),operations->amp_thresh,&(ncand_amp[ifold+1]),rms*sqrt(operations->harmfolds[ifold]));
+			res=pch_seek_search_spectrum(amplitude_harmfolds[ifold],ncomplex,1.0/(operations->harmfolds[ifold]*tobs),operations->amp_thresh,&(ncand_amp[ifold+1]),rms*sqrt(operations->harmfolds[ifold]),xoff/operations->harmfolds[ifold]);
+			// Important note! If we 'twiddled' the amplitudes, our bins are now off by 1/4 of a bin
 			amplitude_harmfold_freqs[ifold+1]=res[0];
 			amplitude_harmfold_spectral[ifold+1]=res[1];
 		}

@@ -12,3 +12,5 @@ pch_seek_test_LDADD=@PSRXML_LIBS@ @FFTW_LIBS@ @FFTW_CFLAGS@
 
 pch-seek-harmfold-powtwo.C: make_harmfold_code.py
 	python make_harmfold_code.py > pch-seek-harmfold-powtwo.C
+
+MOSTLYCLEANFILES=pch-seek-harmfold-powtwo.C

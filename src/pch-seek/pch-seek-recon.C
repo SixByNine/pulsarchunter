@@ -68,8 +68,9 @@ float pch_seek_recon_add(float* amplitudes, float* phases, int ndat, int foldval
 	double *ph_arr, *am_arr, *idx;
 	double p[2];
 	int m;
-	float bac=0;
+	int negs=0;
 	double prevphase=-10000;
+	float bac=0;
 
 
 	ph_arr= (double*)malloc(sizeof(double)*foldval);
@@ -95,23 +96,40 @@ float pch_seek_recon_add(float* amplitudes, float* phases, int ndat, int foldval
 		// amplitudes from the final amplitude
 		if (amp < 0){
 			bac+=amp;
-			amp=0;
 		}
-		while (phase < prevphase) phase+=2*PI;
-		ph_arr[f-1] = phase;
+
+		// store the phase of the fundamental for later
+		if (f==1)prevphase=phase;
+
+		// we know the 'slope' of the phases
+		// will be more-or-less y=m*x where
+		// m is the phase of the fundemental
+		// So we remove this slope to help get
+		// rid of 'wraps'
+		ph_arr[f-1] = phase-prevphase*f;
+		
+		// Now any wraps should be obvious!
+		// so we can remove them by forcing the
+		// values to lie between +- PI
+		while(ph_arr[f-1] > PI)ph_arr[f-1]  -= PI;
+		while(ph_arr[f-1] < -PI)ph_arr[f-1]  += PI;
+
 		am_arr[f-1] = amp;
+//		am_arr[f-1] = 1;
 		idx[f-1]=f;
-		prevphase=phase;
 	}
 
-	// fit a straight line to the data
-	m=1;
-	TKleastSquares_svd_noErr(idx,ph_arr,foldval, p, m, TKfitPolyOrigin);
+	// We want to use all the harmonics to decide the best fit
+	// so fit a straight line to the data
+	m=2;
+	TKleastSquares_svd_noErr(idx,ph_arr,foldval, p, m, TKfitPoly);
 
 	// subtract the straight line
 	
 	for (int f=1; f <= foldval; f++){
-		ph_arr[f-1]-=(f*p[0]);
+		float tmp=ph_arr[f-1];
+		ph_arr[f-1]-=(f*p[1] + p[0]);
+//		printf("% 2d %f\t%f\t%f\t%f\t%d\n",f,spectral_snr,tmp,ph_arr[f-1],am_arr[f-1],(int)((samp*f)/(float)foldval + 0.5));
 	}
 
 	for (int f=1; f <= foldval; f++){
@@ -125,7 +143,7 @@ float pch_seek_recon_add(float* amplitudes, float* phases, int ndat, int foldval
 	free(am_arr);
 	free(idx);
 
-	float ret = ((sqrt(s_re*s_re + s_im*s_im)+bac) / sqrt(foldval));
+	float ret = ((sqrt(s_re*s_re + s_im*s_im)+bac) / sqrt(foldval-negs));
 	if(ret < 0) ret=0;
 	return ret;
 //	return spectral_snr*((sqrt(s_re*s_re + s_im*s_im)) / foldval);
