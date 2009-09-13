@@ -57,6 +57,8 @@ if test X$have_fftw != Xyes; then
 	AC_ERROR("Need single precision FFTW 3 library to compile (libfftw3f.a)! Specify location with --with-fftw-dir")
 fi
 
+CHECK_ZLIB
+
 
 AC_SUBST(XML_CPPFLAGS)
 AC_SUBST(PSRXML_LIBS)

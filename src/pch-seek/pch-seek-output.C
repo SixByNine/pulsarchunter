@@ -1,5 +1,5 @@
-#include "pch-seek.h"
 #include <config.h>
+#include "pch-seek.h"
 
 #include "toolkit.h"
 
@@ -10,6 +10,11 @@
 #include <errno.h>
 #include <string.h>
 
+#ifdef HAVE_LIBZ
+#include <zlib.h>
+#endif /* HAVE_LIBZ */
+
+
 char matches_sigproc(float p1, float p2);
 
 /**
@@ -19,15 +24,24 @@ void pch_seek_dump(float* data, int len, float xscale, char* filename){
 
 	FILE* file;
 	int i;
+#ifdef HAVE_LIBZ
+	char zipfile[512];
+	gzFile gzf;
+	sprintf(zipfile,"%s.gz",filename);
+	gzf = gzopen(zipfile,"wb");
+	for(i=0; i < len; i++){
+		sprintf(zipfile,"%f %f\n",xscale*i,data[i]);
+		gzputs(gzf,zipfile);
+	}
+	gzclose(gzf);
 
+#else
 	file = fopen(filename,"w");
-
 	for(i=0; i < len; i++){
 		fprintf(file,"%f %f\n",xscale*i,data[i]);
 	}
-
 	fclose(file);
-
+#endif
 	return;
 }
 
@@ -148,8 +162,10 @@ void pch_seek_write_prd(char* filename, float** freq, float** spec, float** reco
 
 	indexes = (int**)malloc(sizeof(int*)*nharm);
 
-	if(recon!=NULL)sorter=recon;
-	else sorter=spec;
+	if(recon!=NULL)
+		sorter=recon;
+	else
+		sorter=spec;
 
 	for(ifold = 0; ifold < nharm; ifold++){
 		// sort the candidates
