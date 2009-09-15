@@ -608,15 +608,15 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 			return 4;
 
 		}
-		if (operations->harmfold_simple)
-			operations->harmfold_simple = 1;
+		if (!operations->harmfold_simple)
+			operations->harmfold_smart = 1;
 		operations->search_amplitudes=1;
 	}
 
 
 	if (operations->write_prd){
-		if (operations->harmfold_simple)
-			operations->harmfold_simple = 1;
+		if (!operations->harmfold_simple)
+			operations->harmfold_smart = 1;
 		operations->search_amplitudes=1;
 	}
 

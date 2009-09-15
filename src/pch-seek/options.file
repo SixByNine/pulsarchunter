@@ -1,0 +1,203 @@
+pch-seek [psrxml] {options}
+This programme looks for pulsars in timseries data.
+M.Keith 2009
+Options are:
+
+BEGIN_OPTIONS
+-h --help
+Display help page
+{
+	pch_seek_help();
+	exit(0);
+}
+--hidden-options
+Display hidden/experimental options
+{
+	pch_seek_help_hidden();
+	exit(0);
+}
+* -p --phase-fit
+Use the prototype spectral-channel-phase fitting search mode (not working)
+{
+	operations.phase_fit=1;
+}
+						
+-T --nthreads
+Set number of threads to use. Currently only FFTW uses multi-threading
+{
+	threads=atoi(optarg);
+#ifndef FFTW_THREADS
+	fprintf(stderr,"Warning: FFTW was not compiled in multi-threaded mode.\n");
+#endif
+}						
+-t --fft-size {pow2}
+Reduce the number of samples to a sensible size to fft, or 2^{pow2} if argument provided
+{
+	if(optarg){
+		fft_size = (int)pow(2,atol(optarg));
+	} else {
+		fft_size = 0; //auto-trim
+	}
+}
+* -d --dm-file
+A file with the DM values to search
+{
+	dmfile = fopen(optarg,"r");
+}
+
+-r --recon-add
+Compute reconstructed SNR using the M.Keith method
+{
+	operations.recon_add=1;
+}
+						
+-G --giant-search [file]
+Use \"gtools\" giant search code, write results to [file]
+{
+	operations.giant_search=1;
+	strcpy(operations.giantfile,optarg);
+}	
+-H --harmonic-folds [hfolds]
+Use the harmonic summing routines to fold the specified [hfolds]
+e.g. -H \"2 4 8 16\" to emulate seek
+For best performance list powers of 2 first
+e.g. -H \"2 4 8 16 32 3 6\"
+{
+	strcpy(harmbuf,optarg);
+	operations.nharms=1;
+}
+-A --append-output
+Append the output (e.g. .prd) file rather than overwriting
+{
+	operations.append_output=1;
+}
+	
+--dump-tim
+Dump the timeseries data
+{
+	operations.dump_tim=1;
+}
+--dump-amplitudes
+Dump the Fourier amplitudes
+{
+	operations.dump_amplitudes=1;
+}
+--dump-phases
+Dump the phases
+{
+operations.dump_phases=1;
+}
+--dump-normalised
+Dump the normalised amplitudes
+{
+	operations.dump_normalised=1;
+}
+--dump-harmfolds
+Dump the harmonicaly folded amplitudes
+{
+	operations.dump_harmfolds=1;
+}
+--hist-tim
+Dump a histogram of the timseries
+{
+	operations.hist_tim=1;
+}
+--hist-amplitudes
+Dump a histogram of the Fourier amplitudes
+{
+	operations.hist_amplitudes=1;
+}
+--hist-normalised
+Dump a histogram of the normailised amplitudes
+{
+	operations.hist_normalised=1;
+}
+--hist-harmfolds
+Dump a histogram of the harmonicaly folded amplitudes
+{
+	operations.hist_harmfolds=1;
+}
+* --normaise-median
+Use the rather broken Median normalisation method (Not working)
+{
+	operations.normalise_median=1;
+}
+--normalise-agl
+Use the Lyne et al. normaliseaion method
+{
+	operations.normalise_agl=1;
+}
+
+* --normalise-powerlaw
+Use the powerlaw normaliseation method (Not working)
+{
+	operations.normalise_powerlaw=1;
+}
+
+--harmfold-simple
+Use a slow, simple harmonic suming code
+{
+	operations.harmfold_simple=1;
+}
+
+--harmfold-smart
+Use a fast harmonic summing code for power of 2 harmonics
+Defaults to simple mode for other harmonics
+{
+	operations.harmfold_smart=1;
+}
+
+* --recon-ralph
+Produce reconstruted SNR using the R.Eatough method (not working)
+{
+	operations.recon_ralph=1;
+}
+
+--twiddle-amps
+Compute the inter-bin amplitudes a.la seek
+{
+	operations.twiddle_amplitudes=1;
+}
+
+--write-prd [file]
+write a sigproc style .prd file to [file]
+{
+	operations.write_prd=1;
+	strcpy(operations.prdfile,optarg);
+}
+
+--write-presto-fft [file]
+write a presto style .fft file to [file]
+{
+	operations.write_presto_fft=1;
+	strcpy(operations.presto_fft_file,optarg);
+}
+
+
+--amp-thresh
+Choose the base amplitude threshold for selection as a suspect
+{
+	operations.amp_thresh=atof(optarg);
+}
+
+--hfold-bonus-factor [factor]
+Add sqrt(harmfold)*[factor] to each SNR value (default 0.2)
+{
+	operations.hfold_bonus_factor=atof(optarg);
+}
+
+* --seach-chans
+Enable the spectral channel search mode
+Searches each spectral channel seperately, rather than fscrunching
+{
+	operations.search_chans=1;
+}
+
+--tscrunch [nscrunch]
+Add each adjacent [nscrunch] time samples to reduce total data size.
+{
+	scrunch_factor = atol(optarg);
+}
+
+
+
