@@ -434,7 +434,9 @@ void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header
 		amplitude_harmfold_spectral[0]=res[1];
 		// search the folded data
 		for (ifold=0; ifold < operations->nharms; ifold++){
-			res=pch_seek_search_spectrum(amplitude_harmfolds[ifold],ncomplex,1.0/(operations->harmfolds[ifold]*tobs),operations->amp_thresh,&(ncand_amp[ifold+1]),rms*sqrt(operations->harmfolds[ifold]),xoff/operations->harmfolds[ifold]);
+			float thresh=operations->amp_thresh-sqrt(operations->harmfolds[ifold]*operations->hfold_bonus_factor);
+
+			res=pch_seek_search_spectrum(amplitude_harmfolds[ifold],ncomplex,1.0/(operations->harmfolds[ifold]*tobs),thresh,&(ncand_amp[ifold+1]),rms*sqrt(operations->harmfolds[ifold]),xoff/operations->harmfolds[ifold]);
 			// Important note! If we 'twiddled' the amplitudes, our bins are now off by 1/4 of a bin
 			amplitude_harmfold_freqs[ifold+1]=res[0];
 			amplitude_harmfold_spectral[ifold+1]=res[1];
