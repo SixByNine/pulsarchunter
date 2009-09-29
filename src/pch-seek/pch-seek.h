@@ -45,6 +45,7 @@ typedef struct pch_seek_operations{
 	char giantfile[512];
 	float amp_thresh;
 	float hfold_bonus_factor;
+	int normalise_window_size;
 } pch_seek_operations_t;
 
 
@@ -71,7 +72,7 @@ void pch_seek_form_phase_amp(fftwf_complex* complex_spec, float* amp_spec, float
 void pch_seek_phase_fit_simple(float** phases, int nsamp, int nchan, float* dmtrials, float ndm, float fch1, float foff, float tobs);
 
 /* pch-seek-normalise.C */
-void pch_seek_normalise_median(float* amplitudes, int ndat, int nrun);
+void pch_seek_normalise_median_smoothed(float* amplitudes, int ndat, int nrun);
 void pch_seek_normalise_agl_mean(float* amplitudes, int ndat, int nrun);
 void pch_seek_normalise_powerlaw(float* amplitudes, int ndat);
 

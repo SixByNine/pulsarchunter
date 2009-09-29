@@ -175,7 +175,7 @@ void pch_seek_write_prd(char* filename, float** freq, float** spec, float** reco
 			indexes[ifold][icand]=icand;
 		}
 		quicksort_index(sorter[ifold],indexes[ifold],ncand[ifold]);
-		// reverse the order of the array
+/*		// reverse the order of the array
 		{
 			int swap;
 			int i,j;
@@ -185,7 +185,7 @@ void pch_seek_write_prd(char* filename, float** freq, float** spec, float** reco
 				indexes[ifold][i]=indexes[ifold][j];
 				indexes[ifold][j]=swap;
 			}
-		}
+		}*/
 
 		// remove freqs that are very close
 		float* existing_freqs=(float*) malloc(sizeof(float)*ncand[ifold]);

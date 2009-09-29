@@ -38,6 +38,7 @@ void pch_seek_init_operations(pch_seek_operations_t* operations){
 	operations->use_sigproc_zapfile=0;
 
 	operations->ndm=0;
+	operations->normalise_window_size=128;
 	operations->dmtrials=NULL;
 	operations->harmfolds=NULL;
 	operations->nharms=0;

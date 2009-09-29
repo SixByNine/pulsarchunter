@@ -23,6 +23,8 @@ void pch_seek_zap_sigproc(char* zapfilename, float* spectrum,int npts,float xsca
 		fgets(line,1024,zapfile);
 		if (line[0]=='#' || line[0]=='\n')continue;
 		int nentries = sscanf(line,"%f %f %d %d",&blo,&bhi,&nh_start,&nh);
+		float blo_o=blo;
+		float bhi_o=bhi;
 		if(nentries == 3){
 			// old 3 number format
 			nh=nh_start;
@@ -44,7 +46,7 @@ void pch_seek_zap_sigproc(char* zapfilename, float* spectrum,int npts,float xsca
 				bhi=bf*(float)i+df;
 			} else {
 				blo=(bf-df)*(float)i;
-				blo=(bf+df)*(float)i;
+				bhi=(bf+df)*(float)i;
 			}
 			//convert freq to bin number.
 			int nlo=(int)(blo/xscale+0.5);
@@ -70,7 +72,7 @@ void pch_seek_zap_sigproc(char* zapfilename, float* spectrum,int npts,float xsca
 		}
 		// Now we are ready to start zapping...
 		printf("Filter: %f -> %f Hz %d->%d harmonics (zeroed %d bins)\n"
-				,blo,bhi,nh,nh_start,nzap);
+				,blo_o,bhi_o,nh,nh_start,nzap);
 
 
 

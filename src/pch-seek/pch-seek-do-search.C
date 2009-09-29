@@ -337,14 +337,14 @@ void pch_seek_search_flat_spec(pch_seek_operations_t* operations, psrxml* header
 	if (operations->normalise_median){
 		// normalise the spectra using the reatough/agl median method
 		printf("OP[START]: Normalising using median method\n");
-		pch_seek_normalise_median(amplitude_fscrunch,ncomplex,128);
+		pch_seek_normalise_median_smoothed(amplitude_fscrunch,ncomplex,operations->normalise_window_size);
 		printf("OP[END]: Normalising using median method\n");
 	}
 
 	if (operations->normalise_agl){
 		// normalise the spectra using the reatough/agl median method
 		printf("OP[START]: Normalising using Lyne et al. mean/rms method\n");
-		pch_seek_normalise_agl_mean(amplitude_fscrunch,ncomplex,128);
+		pch_seek_normalise_agl_mean(amplitude_fscrunch,ncomplex,operations->normalise_window_size);
 		printf("OP[END]: Normalising using Lyne et al. mean/rms method\n");
 	}
 
@@ -568,11 +568,6 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 	if (operations->write_presto_fft){
 		operations->fft_input=1;
 	}
-	if (operations->dump_amplitudes || operations->dump_phases || operations->hist_amplitudes){
-		operations->fft_input = 1;
-		operations->form_amplitudes=1;
-	}
-
 	if (operations->phase_fit){
 		if (header->numberOfChannels < 4){
 			fprintf(stderr, "Need at least four channels to do a phase fit search\n");
@@ -634,6 +629,13 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 		operations->form_amplitudes=1;
 		if(!(operations->normalise_agl || operations->normalise_powerlaw || operations->normalise_median))operations->normalise_agl=1;
 	}
+
+	if (operations->dump_amplitudes || operations->dump_phases || operations->hist_amplitudes 
+			|| operations->normalise_agl || operations->normalise_powerlaw || operations->normalise_median ){
+		operations->fft_input = 1;
+		operations->form_amplitudes=1;
+	}
+
 
 
 

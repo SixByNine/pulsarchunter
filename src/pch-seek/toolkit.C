@@ -517,76 +517,21 @@ void meanrms(float* vals, int l, float* m ,float* r){
 }
 
 
-/**
- * Public domain quicksort algorithm
- *
- *
- */
-char quicksort_inplace(float *arr, int elements) {
-
-#define  MAX_LEVELS  1000
-
-	float  piv;
-	int beg[MAX_LEVELS], end[MAX_LEVELS], i=0, L, R ;
-
-	beg[0]=0; end[0]=elements;
-	while (i>=0) {
-		L=beg[i]; R=end[i]-1;
-		if (L<R) {
-			piv=arr[L]; if (i==MAX_LEVELS-1) return 0;
-			while (L<R) {
-				while (arr[R]>=piv && L<R) R--; if (L<R) arr[L++]=arr[R];
-				while (arr[L]<=piv && L<R) L++; if (L<R) arr[R--]=arr[L]; 
-			}
-			arr[L]=piv; beg[i+1]=L+1; end[i+1]=end[i]; end[i++]=L; 
-		}
-		else {
-			i--; 
-		}
-	}
-	return 1; 
-}
-
-char quicksort_index(float *arr, int *idx, int elements) {
-
-#define  MAX_LEVELS  1000
-
-        int  piv;
-        int beg[MAX_LEVELS], end[MAX_LEVELS], i=0, L, R ;
-
-        beg[0]=0; end[0]=elements;
-        while (i>=0) {
-                L=beg[i]; R=end[i]-1;
-                if (L<R) {
-			piv=idx[L];
-			if (i==MAX_LEVELS-1) return 0;
-                        while (L<R) {
-                                while (arr[idx[R]]>=arr[piv] && L<R) R--; if (L<R) idx[L++]=idx[R];
-                                while (arr[idx[L]]<=arr[piv] && L<R) L++; if (L<R) idx[R--]=idx[L];
-                        }
-                        idx[L]=piv; beg[i+1]=L+1; end[i+1]=end[i]; end[i++]=L;
-                }
-                else {
-                        i--;
-                }
-        }
-        return 1;
-}
-
-
-/*
 int quicksort_index_partition(float* array, int* index, int top, int bottom);
-void quicksort_index(float* array, int* index, int top, int bottom){
+void quicksort_index_wk(float* array, int* index, int top, int bottom){
         int middle;
         if (top < bottom)
         {
                 middle = quicksort_index_partition(array,index, top, bottom);
-                quicksort_index(array,index, top, middle);
-                quicksort_index(array,index, middle+1, bottom);
+                quicksort_index_wk(array,index, top, middle);
+                quicksort_index_wk(array,index, middle+1, bottom);
         }
         return;
 }
 
+void quicksort_index(float* array, int* index, int npts){
+	quicksort_index_wk(array,index,1,npts-1);
+}
 
 int quicksort_index_partition(float* array, int* index, int top, int bottom){
         float x = array[index[top]];
@@ -617,17 +562,20 @@ int quicksort_index_partition(float* array, int* index, int top, int bottom){
 
 
 int quicksort_inplace_partition(float* array, int top, int bottom);
-void quicksort_inplace(float* array, int top, int bottom){
+void quicksort_inplace_wk(float* array, int top, int bottom){
         int middle;
         if (top < bottom)
         {
                 middle = quicksort_inplace_partition(array, top, bottom);
-                quicksort_inplace(array, top, middle);
-                quicksort_inplace(array, middle+1, bottom);
+                quicksort_inplace_wk(array, top, middle);
+                quicksort_inplace_wk(array, middle+1, bottom);
         }
         return;
 }
 
+void quicksort_inplace(float* array, int npts){
+	quicksort_inplace_wk(array,1,npts-1);
+}
 
 int quicksort_inplace_partition(float* array, int top, int bottom){
         float x = array[top];
@@ -655,4 +603,3 @@ int quicksort_inplace_partition(float* array, int top, int bottom){
         }while (topidx < botidx);
         return botidx;
 }
-*/

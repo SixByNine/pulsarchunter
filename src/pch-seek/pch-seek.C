@@ -88,6 +88,7 @@ int main(int argc, char** argv){
 	if(fft_size == 0){
 		// auto-use a good size fft!
 		fft_size=pch_seek_fourier_size(header->numberOfSamples,0);
+		printf("Using sensible fft size=%d\n",fft_size);
 	}
 
 	if(fft_size > 1){

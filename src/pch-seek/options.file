@@ -39,7 +39,7 @@ Set number of threads to use. Currently only FFTW uses multi-threading
 -t --fft-size {pow2}
 Reduce the number of samples to a sensible size to fft, or 2^{pow2} if argument provided
 {
-	if(optarg){
+	if(optarg!=NULL){
 		fft_size = (int)pow(2,atol(optarg));
 	} else {
 		fft_size = 0; //auto-trim
@@ -129,15 +129,24 @@ Dump a histogram of the harmonicaly folded amplitudes
 {
 	operations.hist_harmfolds=1;
 }
-* --normaise-median
-Use the rather broken Median normalisation method (Not working)
+* --normalise-median {window-size}
+Use the smoothed-median-rms normalisation method (ws default=32)
 {
 	operations.normalise_median=1;
+	if(optarg!=NULL)
+		operations.normalise_window_size=atoi(optarg);
+	else
+		operations.normalise_window_size=32;
 }
---normalise-agl
-Use the Lyne et al. normaliseaion method
+--normalise-agl {window-size}
+Use the Lyne et al. normaliseaion method (window size default=128)
 {
 	operations.normalise_agl=1;
+	if(optarg!=NULL)
+		operations.normalise_window_size=atoi(optarg);
+	else
+		operations.normalise_window_size=128;
+
 }
 
 * --normalise-powerlaw
@@ -186,7 +195,7 @@ write a presto style .fft file to [file]
 }
 
 
---amp-thresh
+--amp-thresh [thres]
 Choose the base amplitude threshold for selection as a suspect
 {
 	operations.amp_thresh=atof(optarg);

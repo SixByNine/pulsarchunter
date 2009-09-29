@@ -39,8 +39,8 @@ void meanrms(float* vals, int l, float* m ,float* r);
 void TKsort_f(float *val,int nobs);
 void TKsort_d(double *val,int nobs);
 void TKsort_2f(float *val,float *val2,int nobs);
-char quicksort_index(float* array, int* index, int size);
-char quicksort_inplace(float* array, int size);
+void quicksort_index(float* array, int* index, int npts);
+void quicksort_inplace(float* array, int npts);
 
 
 

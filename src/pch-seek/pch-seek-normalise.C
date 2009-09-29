@@ -159,39 +159,112 @@ void pch_seek_normalise_agl_mean(float* amplitudes, int ndat, int nrun){
 }
 
 
-/**
- *
- * Normalise the data by computing the median every nrun bins
- *
+
+/*
  */
-void pch_seek_normalise_median(float* amplitudes, int ndat, int nrun){
-	int k,h;
-	float* small_block_array;
-	float* rmed;
+void pch_seek_normalise_median_smoothed(float* amplitudes, int ndat, int nrun){
 
-	rmed = (float*) malloc(sizeof(float)*(int)(ndat/nrun+0.5));
-	small_block_array = (float*) malloc(sizeof(float)*nrun);
+	int binnum,npts;
+	int nrunmax,nrunstart,nruno,nrunoo;
+	float *buf_old,*buf_new,*realbuffer, *buf_old_old;
+	float median,medlow,new_median,new_medlow,slope_median,slope_medlow,new_rms,slope_rms;
+	float ssq,rms;
+	float u_quartile,l_quartile;
 
-	k=0;
 
-	for ( int i = 0; i < ndat; i+=nrun){
-		memcpy(small_block_array,amplitudes+i,nrun*sizeof(float));
-		quicksort_inplace(small_block_array,nrun);
-		rmed[k]=small_block_array[(int)(nrun/2)];
-		k++;
+	nrunstart=nrun;
+	nrunmax=nrun*nrun;
+	realbuffer=(float*)malloc(sizeof(float)*nrunmax);
+
+	buf_old=amplitudes;
+	binnum=0;
+	memcpy(realbuffer,buf_old,nrun*sizeof(float));
+	quicksort_inplace(realbuffer,nrun);
+	npts=nrun;
+	while(realbuffer[npts-1] < 1e-12){
+		npts--;
 	}
 
+	
+	median=realbuffer[(int)(npts/2)];
+//	medlow=median - realbuffer[(int)(5*npts/6)]; // need some conversion factor?
+	u_quartile=realbuffer[(int)(npts/4)];
+	l_quartile=realbuffer[(int)(3*npts/4)];
 
-	// Now do the 'eatough-lyne' median whitening
-	h=-1;
-	for(int i = 0; i < ndat; i++){
-		if (!(i%nrun))h++; // every nrun, increment h.
-		if(h>=k) h=k-1;;
-		if (fabs(rmed[h]) < 0.001)  amplitudes[i] = 0.0;
-		else amplitudes[i] = (amplitudes[i]/rmed[h])-1.0;
+	nruno=nrun;
+	nrun*=2;
+	binnum+=nruno;
+	buf_new=NULL;
+	while (binnum+nrun < ndat){
+		buf_new = buf_old+nruno;
+
+		memcpy(realbuffer,buf_new,nrun*sizeof(float));
+		quicksort_inplace(realbuffer,nrun);
+		npts=nrun;
+		while(realbuffer[npts-1] < 1e-12){
+			npts--;
+		}
+
+		new_median=realbuffer[(int)(npts/2)];
+//		new_medlow=(realbuffer[(int)(npts/6)] - realbuffer[(int)(5*npts/6)])/2.0; // need some conversion factor?
+
+		slope_median=(new_median-median)/nrun;
+//		slope_medlow=(new_medlow-medlow)/nrun;
+		slope_rms=0;//(new_rms-rms)/nrun;
+
+		for (int i = 0; i < nruno; i++){
+			if(buf_old[i] < 1e-12){
+				buf_old[i]=0;
+			} else {
+				buf_old[i] -= median + slope_median*i;
+			}
+		}
+		ssq=0;
+		int count=0;
+		for (int i = 0; i < nruno; i++){
+//			if(buf_old[i] > l_quartile && buf_old[i] < u_quartile && fabs(buf_old[i]) > 1e-12){
+			if(buf_old[i] < 0){
+				ssq+=buf_old[i]*buf_old[i];
+				count++;
+			}
+		}
+
+		new_rms=sqrt(ssq/count);
+
+		slope_rms=(new_rms-rms)/nruno;
+
+		if(buf_old_old!=NULL){
+			for (int i = 0; i < nrunoo; i++){
+				buf_old_old[i] /= rms + slope_rms*i;
+			}
+		}
+
+
+
+		u_quartile=realbuffer[(int)(npts/4)];
+		l_quartile=realbuffer[(int)(3*npts/4)];
+
+		median=new_median;
+		rms=new_rms;
+//		medlow=new_medlow;
+
+
+		buf_old_old=buf_old;
+		buf_old=buf_new;
+		binnum+=nrun;
+		nrunoo=nruno;
+		nruno=nrun;
+		if(nrun < nrunmax) nrun+=nrunstart;
 	}
 
-	free(small_block_array);
-	free(rmed);
+	// finish off the last little bit
+	for (int i = binnum-nrunoo-nruno; i < binnum-nruno; i++){
+		amplitudes[i]/=rms;
+	}
+
+	for (int i = binnum-nruno; i < ndat; i++){
+		amplitudes[i]-= median;
+		amplitudes[i]/=rms;
+	}
+
 }
-
