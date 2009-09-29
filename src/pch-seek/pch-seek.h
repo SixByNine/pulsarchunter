@@ -32,12 +32,14 @@ typedef struct pch_seek_operations{
 	char append_output;
 	char giant_search;
 	char write_presto_fft;
+	char use_sigproc_zapfile;
 
 	// some options
 	float* dmtrials;
 	int ndm;
 	int* harmfolds;
 	int nharms;
+	char zapfile[512];
 	char prdfile[512];
 	char presto_fft_file[512];
 	char giantfile[512];
@@ -97,7 +99,8 @@ void pch_seek_singlepulse(float* timeseries, int npts, float thresh, float dm, i
 /* ../pch-dmcomp/pch-fourier-size.C */
 int pch_seek_fourier_size(int npts, bool pow2only);
 
-
+/* pch-seek-zap.C */
+void pch_seek_zap_sigproc(char* zapfilename, float* spectrum,int npts,float xscale);
 
 #endif /*PCHFOLD_H_*/
 

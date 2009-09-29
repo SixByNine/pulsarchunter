@@ -25,7 +25,7 @@ float** pch_seek_search_spectrum(float* amplitudes, int ndat, float xscale, floa
 			results[0][nres] = xscale*(float)i+xoff;
 			results[1][nres] = amplitudes[i]/rms;
 			nres++;
-			if(nres > arrsize){
+			if(nres >= arrsize){
 				arrsize*=2;
 				results[0] = (float*) realloc(results[0],sizeof(float)*arrsize);
 				results[1] = (float*) realloc(results[1],sizeof(float)*arrsize);

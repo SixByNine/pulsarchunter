@@ -1,3 +1,4 @@
+#include <config.h>
 #include "pch-seek.h"
 #include <stdlib.h>
 #include <stdio.h>

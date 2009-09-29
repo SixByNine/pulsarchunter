@@ -95,6 +95,7 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 			if(operations->twiddle_amplitudes)printf(" (twiddle mode)\n");
 			else printf(" (natural mode)\n");
 		}
+		if(operations->use_sigproc_zapfile)printf(" - Zap using '%s'\n",operations->zapfile);
 		if(operations->dump_amplitudes)printf(" - Dump amplitudes\n");
 		if(operations->hist_amplitudes)printf(" - Histogram amplitudes\n");
 		if(operations->giant_search)printf(" - Single Pulse Search (GSearch)\n");
@@ -228,6 +229,14 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 			}
 			printf("OP[END]: Form phase-amplitude spectra\n");
 
+		}
+
+		if (operations->use_sigproc_zapfile){
+			printf("OP[START]: Zap using '%s'\n",operations->zapfile);
+			for (chan=0; chan < nchan; chan++){
+				pch_seek_zap_sigproc(operations->zapfile,amplitude_spectra[chan],ncomplex,1.0/tobs);
+			}
+			printf("OP[END]: Zap using '%s'\n",operations->zapfile);
 		}
 
 		if (operations->hist_amplitudes){
@@ -594,7 +603,7 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 	if (operations->dump_normalised || operations->hist_normalised){
 		operations->fft_input = 1;
 		operations->form_amplitudes=1;
-		if(!(operations->normalise_agl || operations->normalise_powerlaw || operations->normalise_median))operations->normalise_powerlaw=1;
+		if(!(operations->normalise_agl || operations->normalise_powerlaw || operations->normalise_median))operations->normalise_agl=1;
 	}
 
 	if (operations->dump_harmfolds || operations->hist_harmfolds){
@@ -623,7 +632,7 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 	if (operations->harmfold_simple || operations->harmfold_smart){
 		operations->fft_input = 1;
 		operations->form_amplitudes=1;
-		if(!(operations->normalise_agl || operations->normalise_powerlaw || operations->normalise_median))operations->normalise_powerlaw=1;
+		if(!(operations->normalise_agl || operations->normalise_powerlaw || operations->normalise_median))operations->normalise_agl=1;
 	}
 
 

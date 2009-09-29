@@ -32,8 +32,10 @@ void pch_seek_init_operations(pch_seek_operations_t* operations){
 	operations->write_prd=0;
 	operations->write_presto_fft=0;
 	operations->recon_add=0;
+	operations->recon_ralph=0;
 	operations->giant_search = 0;
 	operations->append_output=0;
+	operations->use_sigproc_zapfile=0;
 
 	operations->ndm=0;
 	operations->dmtrials=NULL;
@@ -43,6 +45,7 @@ void pch_seek_init_operations(pch_seek_operations_t* operations){
 	operations->amp_thresh=5;
 	operations->hfold_bonus_factor=0.2;
 	strcpy(operations->giantfile,"giant.sp");
+	strcpy(operations->zapfile,"zap.file");
 
 	strcpy(operations->presto_fft_file,"presto");
 }

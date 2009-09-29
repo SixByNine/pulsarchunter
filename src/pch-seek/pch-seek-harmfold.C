@@ -18,6 +18,10 @@ float** pch_seek_harmfold_simple(float* amplitudes, int ndat, int* folds, int nf
 	for (ifold=0; ifold < nfolds; ifold++){
 		// Make the array that stores the output
 		hfolds[ifold] = (float*) calloc(ndat,sizeof(float));
+		if(hfolds[ifold] == NULL){
+			printf("Could not allocate enough memory for harmfold %d\n",folds[ifold]);
+			exit(1);
+		}
 		pch_seek_harmfold_stupid(amplitudes,ndat,folds,ifold,hfolds);
 	}
 	return hfolds;
@@ -29,8 +33,14 @@ float** pch_seek_harmfold_smart(float* amplitudes, int ndat, int* folds, int nfo
 
 	hfolds = (float**) malloc(sizeof(float*) * nfolds);
 	// Make the array that stores the output
-	for (ifold=0; ifold < nfolds; ifold++)
+	for (ifold=0; ifold < nfolds; ifold++){
 		hfolds[ifold] = (float*) calloc(ndat,sizeof(float));
+		if(hfolds[ifold] == NULL){
+			fprintf(stderr,"Could not allocate enough memory for harmfold %d\n",folds[ifold]);
+			exit(1);
+		}
+	}
+		
 
 	// See if we have 2,4,8,16,... etc
 	for (ifold=0; ifold < nfolds; ifold++){

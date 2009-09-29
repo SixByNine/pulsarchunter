@@ -16,13 +16,19 @@ Display hidden/experimental options
 	pch_seek_help_hidden();
 	exit(0);
 }
+--version
+Display current version information
+{
+	printf("%s: %s\n",argv[0],PACKAGE_STRING);
+	exit(0);
+}
 * -p --phase-fit
 Use the prototype spectral-channel-phase fitting search mode (not working)
 {
 	operations.phase_fit=1;
 }
 						
--T --nthreads
+-T --nthreads [numthreads]
 Set number of threads to use. Currently only FFTW uses multi-threading
 {
 	threads=atoi(optarg);
@@ -72,6 +78,12 @@ Append the output (e.g. .prd) file rather than overwriting
 	operations.append_output=1;
 }
 	
+-z --zapfile [zapfile]
+Read and use a seek format zapfile
+{
+	operations.use_sigproc_zapfile=1;
+	strcpy(operations.zapfile,optarg);
+}
 --dump-tim
 Dump the timeseries data
 {

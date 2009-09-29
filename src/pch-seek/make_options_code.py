@@ -14,7 +14,7 @@ desc=list()
 options=list()
 text=list()
 for line in file:
-	if line.strip()=="" or line.strip().startswith("#"):
+	if line.strip()=="" or line.strip().startswith("!!"):
 		continue
 	if expect=="text":
 		if line.startswith("BEGIN_OPTIONS"):
@@ -140,6 +140,7 @@ for option in options:
 
 file = open("pch-seek-options.C","w")
 
+file.write("#include <config.h>\n")
 file.write("#include <stdlib.h>\n")
 file.write("#include <stdio.h>\n")
 file.write("#include <getopt.h>\n")

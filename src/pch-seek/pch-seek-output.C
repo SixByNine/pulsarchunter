@@ -249,9 +249,9 @@ void pch_seek_write_prd(char* filename, float** freq, float** spec, float** reco
 		fprintf(file,"RAJ = %f\n",header->startCoordinate.ra);
 		fprintf(file,"DECJ = %f\n",header->startCoordinate.dec);
 
-		fprintf(file,"TSAMP = %f us\n",header->currentSampleInterval);
+		fprintf(file,"TSAMP = %f us\n",header->currentSampleInterval*1e6);
 		fprintf(file,"PROGRAM = %s\n",PACKAGE_NAME);
-		fprintf(file,"VERSION = %f\n",PACKAGE_VERSION);
+		fprintf(file,"VERSION = %s\n",PACKAGE_VERSION);
 
 		fprintf(file,"HARM_FOLDS =");
 		for(ifold = 0; ifold < nharm; ifold++){
@@ -272,7 +272,7 @@ void pch_seek_write_prd(char* filename, float** freq, float** spec, float** reco
 		fprintf(file,"##END HEADER##\n");
 	}
 
-	fprintf(file," DM:% 11.6f      AC:% 11.6f      AD:% 11.6f\n",header->referenceDm,0,0);
+	fprintf(file," DM:% 11.6f      AC:% 11.6f      AD:% 11.6f      TSAMP: % 11.6e\n",header->referenceDm,0.0,0.0,header->currentSampleInterval);
 
 	for (icand=0; icand < maxncand; icand++){
 		for(ifold = 0; ifold < nharm; ifold++){
