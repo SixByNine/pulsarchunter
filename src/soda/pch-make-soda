@@ -1,0 +1,203 @@
+#!/usr/bin/python
+import sys,os,math
+
+class Trial:
+	def __init__(self, name, trials,nscr=1):
+		self.name=name
+		self.trials=trials
+		self.nscr=nscr
+
+def dmStep(f0, fch,tsamp,DM):
+	nu1_2 = 1.0e6/(f0*f0);
+	nu2_2 = 1.0e6/(fch*fch);
+	return int((4.148808e-3 * DM * (nu2_2-nu1_2)) / tsamp + 0.5);
+
+def makeDmSteps(f0, df, nchan,tsamp, DM,nscr=1):
+	steps=set()
+	for i in range(0,nchan):
+		fch=f0+df*i
+		steps.add("%05dcb%05d"%(i,dmStep(f0,fch,tsamp,DM)))
+
+	return steps
+
+def makeDmStepsForTrials(f0, df, nchan, tsamp, DMs):
+	trials=list()
+	DMt=0
+	for DM in DMs:
+		ichanSM=int(dmStep(f0,f0+df,tsamp,DM)/2.0)
+		nscr=1
+		while nscr <= ichanSM:
+			nscr*=2
+		nscr= int(nscr/2.0 + 0.5)
+		trials.append(Trial(name="%d"%DMt, trials=makeDmSteps(f0, df, nchan,tsamp, DM,nscr=nscr),nscr=nscr))
+		DMt+=1
+	return trials
+
+
+def makeDmTrials(f0, df,nchan, tsamp, minDM, maxDM, tol=1.25, ti=40):
+	DMs=list()
+	bw=df
+	cfreq=(f0+bw/2.0)/1000
+	tsamp*=1e6
+	print cfreq,bw,tsamp,nchan
+
+	DM = minDM
+	while DM < maxDM:
+		DMs.append(DM)
+		oldDM = DM
+		t00 = math.sqrt(tsamp*tsamp + ti*ti + math.pow(8.3*bw*DM/pow(cfreq,3.0),2))
+		a = 8.3*bw/pow(cfreq,3)
+		b = 8.3*nchan*bw/4/pow(cfreq,3)
+		c = tol*tol*t00*t00 - tsamp*tsamp - ti*ti
+		newDM = (b*b*DM + math.sqrt(-a*a*b*b*DM*DM + a*a*c + b*b*c))/(a*a+b*b)
+		DM = newDM
+		print DM
+	return DMs
+
+def replaceSteps(newtrial,trials):
+	for t in trials:
+		if newtrial.trials.issubset(t.trials):
+			new=t.trials.difference(newtrial.trials)
+			new.add(newtrial.name)
+			t.trials=new
+
+def compressDMSteps(trials,x=0,z=2):
+	c=1
+	for t1 in trials:
+		for t2 in reversed(trials[c:]):
+			intersect= set.intersection(t1.trials,t2.trials)
+			if len(intersect) >= z:
+				newtrial=Trial(name="G%05d"%x, trials=intersect)
+				replaceSteps(newtrial,trials)
+				trials.append(newtrial)
+				return -1
+		c+=1
+	return 0
+
+
+def countAdditions(trials):
+	add=0
+	for trial in trials:
+		add+=len(trial.trials)
+	return add
+
+def stepsToCode(steps,b):
+	str=""
+	for step in steps:
+		if step.startswith("G"):
+			str += "%s +"%step
+		else:
+			elems=step.split("cb")
+			str += "inarr[%d][%d] +"%(int(elems[0]),int(elems[1])+b)
+
+	return str[:-1]
+
+def maxSamp(steps):
+	max=0
+	for step in steps:
+		if not step.startswith("G"):
+			elems=step.split("cb")
+			v=int(elems[1])
+			if v > max:
+				max=v
+
+	return max
+
+
+def trialsToCode(trials,file,blocksize):
+	maxNscr=1
+	max=0
+	for trial in trials:
+		if trial.nscr > maxNscr:
+			maxNscr=trial.nscr
+	
+	file.write("#include \"soda_dedisp.h\"\n")
+	file.write("void soda_dedisp(SODA_TYPE** dm, SODA_TYPE** inarr){\n")
+	#file.write("\tfor (int b =0; b < nsamp; b+=%d){\n"%maxNscr)
+	for b in range(0,blocksize):
+		file.write("\t{\n")
+		for trial in reversed(trials):
+			v=maxSamp(trial.trials)
+			if v > max:
+				max=v
+			if(trial.name.startswith("G")):
+				file.write("\t\tSODA_TYPE %s = %s;\n"%(trial.name,stepsToCode(trial.trials,b)))
+			else:
+				if b%trial.nscr == 0:
+					file.write("\t\tdm[%s][%d] = %s;\n"%(trial.name,b/trial.nscr,stepsToCode(trial.trials,b)))
+		file.write("\t}\n")
+	#file.write("\t}\n")
+	file.write("}\n")
+	file.close()
+	return max
+
+def writeSodaHeader(file,blocksize,DMs,comp_nbytes,pad_nbytes,nchan,maxsamp):
+	int_type="???"
+	pad_type="???"
+	if comp_nbytes==8:
+		int_type="unsigned long long"
+	if comp_nbytes==4:
+		int_type="unsigned int"
+	if pad_nbytes==2:
+		pad_type="unsigned short"
+	if comp_nbytes==1:
+		pad_type="unsigned char"
+	file.write("#define SODA_TYPE %s\n"%int_type)
+	file.write("#define SODA_PAD %d\n"%pad_nbytes)
+	file.write("#define SODA_PAD_TYPE %s\n"%pad_type)
+	file.write("#define SODA_COMP %d\n"%comp_nbytes)
+	file.write("#define SODA_BS %d\n"%blocksize)
+	file.write("#define SODA_NCHAN %d\n"%nchan)
+	file.write("#define SODA_NDM %d\n"%len(DMs))
+	file.write("#define SODA_MAXSAMP %d\n"%maxsamp)
+
+	file.write("void soda_dedisp(SODA_TYPE** dm, SODA_TYPE** inarr);\n")
+	file.write("SODA_TYPE** soda_repack(unsigned char* raw);\n")
+	file.close()
+
+
+def main(argv=None):
+	if argv==None:
+		argv=sys.argv
+	print "======================================"
+	print "Self Optimising Dedispersion Algorithm"
+	print "           SODA - v 1.0               "
+	print "         Michael J. Keith 2009        "
+	print "======================================"
+	print ""
+
+	f0=1500
+	nchan=1024
+	df=400.0/1024.0;
+	tsamp=64e-6
+	minDM=0
+	maxDM=3
+	blocksize=12
+
+	DMs=makeDmTrials(f0,df,nchan,tsamp, minDM, maxDM)
+	print DMs
+	trials = makeDmStepsForTrials(f0,df,nchan,tsamp,DMs=DMs)
+	c1= countAdditions(trials)
+	x=0
+#	for z in range(100,2,-1):
+#		print z
+#		while compressDMSteps(trials,x,z)==-1:
+#			x+=1
+#			if x % 10 == 0:
+#				print x
+#				c2=countAdditions(trials)
+#				print c1,c2,int(100.0*(float(c2)/float(c1)))
+	c2= countAdditions(trials)
+	maxsamp=trialsToCode(trials,open("soda_dedisp.c","w"),blocksize)
+	writeSodaHeader(open("soda_dedisp.h","w"),blocksize,DMs,8,2,nchan,maxsamp)
+
+
+	print c1,c2,int(100.0*(float(c2)/float(c1)))
+	#for t in trials:
+	#	print t.name,t.trials
+
+	return 0
+
+
+if __name__ == "__main__":
+	sys.exit(main(sys.argv))
