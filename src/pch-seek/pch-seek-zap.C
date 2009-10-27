@@ -9,7 +9,7 @@ void pch_seek_zap_sigproc(char* zapfilename, float* spectrum,int npts,float xsca
 	FILE* zapfile;
 	char line[1024];
 	float blo,bhi,bf,df;
-	int nh_start,nh,nzap;
+	int nh_start,nh,nzap,count;
 	char stat; // static widths
 
 
@@ -19,8 +19,10 @@ void pch_seek_zap_sigproc(char* zapfilename, float* spectrum,int npts,float xsca
 		return;
 	}
 
+	count=0;
 	while(!feof(zapfile)){
 		fgets(line,1024,zapfile);
+		count++;
 		if (line[0]=='#' || line[0]=='\n')continue;
 		int nentries = sscanf(line,"%f %f %d %d",&blo,&bhi,&nh_start,&nh);
 		float blo_o=blo;
@@ -31,7 +33,10 @@ void pch_seek_zap_sigproc(char* zapfilename, float* spectrum,int npts,float xsca
 			nh_start=1;
 			nentries=4;
 		}
-		if(nentries!=4)printf("Bad line in zap file: %s",line);
+		if(nentries!=4){
+			printf("Bad line (#%d) in zap file!",count);
+			continue;
+		}
 
 		bf=0.5*(bhi+blo);
 		df=0.5*(bhi-blo);
