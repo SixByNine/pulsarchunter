@@ -25,7 +25,7 @@ void pch_dmcomp_print_usage();
  */
 int main(int argc, char** argv){
 	psrxml* header;
-	const char* args = "2d:FhSN:";
+	const char* args = "2d:FhSN:l";
 	char c;
 	int long_opt_idx = 0;
 	int opt_flag = 0;
@@ -33,6 +33,7 @@ int main(int argc, char** argv){
 	struct option long_opt[256];
 	bool pow2only=false;
 	bool compute_fourier_size=false, compute_scrunch_factor=false;
+	bool compute_dm_band_dly=false;
 	bool compute_ndm_steps=false;
 	int ndm=1;
 
@@ -69,6 +70,10 @@ int main(int argc, char** argv){
 					case 'S':
 						compute_scrunch_factor=true;
 						break;
+					case 'l':
+						compute_dm_band_dly=true;
+						break;
+
 					case 'N':
 						compute_ndm_steps=true;
 						ndm=atoi(optarg);
@@ -91,8 +96,16 @@ int main(int argc, char** argv){
 	cfreq /= 1000.0; // GHz
 	float dm_t = KDM *1e-6 * fabs(header->freqOffset) * pow(cfreq,-3) * dm; // seconds
 	int nsamp=header->numberOfSamples;
+	
 
-
+	if(compute_dm_band_dly){
+		float f1 = header->centreFreqCh1;
+		float f2 = header->centreFreqCh1 + header->freqOffset*header->numberOfChannels;
+		f1 /= 1000.0; // GHz
+		f2 /= 1000.0; // GHz
+		float dm_band_dly = KDM/2.0 * 1e-3 * fabs(pow(f1,-2)-pow(f2,-2)) * dm; // seconds
+		printf("%f %d\n",dm_band_dly,(int)(dm_band_dly/header->currentSampleInterval));
+	}
 	if (compute_ndm_steps){
 		float maxdm = pch_getDMtable_ndm(dm, ndm, header->currentSampleInterval*1e6, 40.0, header->freqOffset, cfreq, header->numberOfChannels, 1.25);
 		printf("%f\n",maxdm);

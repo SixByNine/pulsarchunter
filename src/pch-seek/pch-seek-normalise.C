@@ -1,74 +1,14 @@
-#include "pch-seek.h"
-
-#include "TKfit.h"
-#include "toolkit.h"
+#include <config.h>
 
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
 
+#include "TKfit.h"
+#include "toolkit.h"
+
 #define median_NMAX 8192
 
-
-
-/**
- * Try and normalise the data.
- *
- * This aproach fits a power law to the data and then divides by this
- *
- * Then we do the AGL mean/rms fitting with a large block size, to remove any residual effects.
- */
-void pch_seek_normalise_powerlaw(float* amplitudes, int ndat){
-	double* log_x;
-	double* log_y;
-	double p[2];
-	int m,x;
-	float mult,power;
-	float mean,rms;
-
-	log_x = (double*)malloc(sizeof(double)*(int)(ndat));
-	log_y = (double*)malloc(sizeof(double)*(int)(ndat));
-
-
-
-	x=0;
-	for (int i = 1; i < ndat; i+=10){
-		if(amplitudes[i] < 0.1) continue;
-		log_x[x] = log((double)i);
-		log_y[x] = log((double)amplitudes[i]);
-//		printf("%lf %lf\n",log_x[x],log_y[x]);
-		x++;
-	}
-
-
-	m=2;
-	TKleastSquares_svd_noErr(log_x,log_y,(int)(ndat/1024), p, m, TKfitPoly);
-
-	mult=exp(p[0]);
-	power=p[1];
-
-//	printf("--\n%f %f\n",mult,power);
-
-	free(log_x);
-	free(log_y);
-
-	for (int i = 0; i < ndat; i++){
-		if(amplitudes[i] > 0.1){
-			amplitudes[i] /= mult*pow((float)i,power);
-		}
-	}
-
-/*	meanrms(amplitudes, ndat,&mean,&rms);
-
-	for (int i = 0; i < ndat; i++){
-		amplitudes[i] = (amplitudes[i]-mean)/rms;
-	}
-*/
-
-	pch_seek_normalise_agl_mean(amplitudes,ndat,16384);
-
-
-}
 
 /**
  *
@@ -159,8 +99,72 @@ void pch_seek_normalise_agl_mean(float* amplitudes, int ndat, int nrun){
 }
 
 
+/**
+ * Try and normalise the data.
+ *
+ * This aproach fits a power law to the data and then divides by this
+ *
+ * Then we do the AGL mean/rms fitting with a large block size, to remove any residual effects.
+ */
+void pch_seek_normalise_powerlaw(float* amplitudes, int ndat){
+	double* log_x;
+	double* log_y;
+	double p[2];
+	int m,x;
+	float mult,power;
+	float mean,rms;
+
+	log_x = (double*)malloc(sizeof(double)*(int)(ndat));
+	log_y = (double*)malloc(sizeof(double)*(int)(ndat));
+
+
+
+	x=0;
+	for (int i = 1; i < ndat; i+=10){
+		if(amplitudes[i] < 0.1) continue;
+		log_x[x] = log((double)i);
+		log_y[x] = log((double)amplitudes[i]);
+//		printf("%lf %lf\n",log_x[x],log_y[x]);
+		x++;
+	}
+
+
+	m=2;
+	TKleastSquares_svd_noErr(log_x,log_y,(int)(ndat/1024), p, m, TKfitPoly);
+
+	mult=exp(p[0]);
+	power=p[1];
+
+//	printf("--\n%f %f\n",mult,power);
+
+	free(log_x);
+	free(log_y);
+
+	for (int i = 0; i < ndat; i++){
+		if(amplitudes[i] > 0.1){
+			amplitudes[i] /= mult*pow((float)i,power);
+		}
+	}
+
+/*	meanrms(amplitudes, ndat,&mean,&rms);
+
+	for (int i = 0; i < ndat; i++){
+		amplitudes[i] = (amplitudes[i]-mean)/rms;
+	}
+*/
+
+	pch_seek_normalise_agl_mean(amplitudes,ndat,16384);
+
+
+}
+
+
 
 /*
+ * This is the M.Keith attempt at spectral whitening
+ *
+ * It subtracts an interpolated median of increasing block sizes (as in Presto),
+ * Then divides by the interpolated RMS of the resultant -ve half of the data.
  */
 void pch_seek_normalise_median_smoothed(float* amplitudes, int ndat, int nrun){
 
@@ -173,7 +177,7 @@ void pch_seek_normalise_median_smoothed(float* amplitudes, int ndat, int nrun){
 
 
 	nrunstart=nrun;
-	nrunmax=nrun*nrun;
+	nrunmax=1024;
 	realbuffer=(float*)malloc(sizeof(float)*nrunmax);
 
 	buf_old=amplitudes;
@@ -254,7 +258,7 @@ void pch_seek_normalise_median_smoothed(float* amplitudes, int ndat, int nrun){
 		binnum+=nrun;
 		nrunoo=nruno;
 		nruno=nrun;
-		if(nrun < nrunmax) nrun+=nrunstart;
+		if(nrun < nrunmax) nrun = nrunstart + (int)(binnum/1000);
 	}
 
 	// finish off the last little bit
