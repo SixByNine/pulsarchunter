@@ -1,5 +1,5 @@
 bin_PROGRAMS=pch-dmcomp
-INCLUDES=@PSRXML_CFLAGS@
+AM_CPPFLAGS=@PSRXML_CFLAGS@
 
 core_src=pch-dmcomp.h pch-fourier-size.C pch-ndm-calc.C
 

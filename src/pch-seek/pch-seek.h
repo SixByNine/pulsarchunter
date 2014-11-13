@@ -10,6 +10,7 @@ typedef struct pch_seek_operations{
 	char form_amplitudes;
 	char twiddle_amplitudes;
 	char dump_amplitudes;
+	char bdump_amplitudes;
 	char dump_phases;
 	char dump_normalised;
 	char dump_harmfolds;
@@ -60,6 +61,7 @@ void pch_seek_init_operations(pch_seek_operations_t* ops);
 
 /* pch-seek-output.C */
 void pch_seek_dump(float* data, int len, float xscale, char* filename);
+void pch_seek_dump_binary(float* data, int len, float xscale, char* filename);
 void pch_seek_histogram(float* data, int len, int hist_bins, char* filename);
 void pch_seek_write_presto_fft(char* filestem, fftwf_complex* spectrum, int ncomplex, psrxml* header);
 void pch_seek_write_prd(char* filename, float** freq, float** spec, float** recon, int* ncand, int* harms, int nharm, psrxml* header, char append);

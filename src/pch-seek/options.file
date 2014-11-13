@@ -94,6 +94,11 @@ Dump the Fourier amplitudes
 {
 	operations.dump_amplitudes=1;
 }
+--dump-binary-amps
+Dump the Fourier amplitudes in binary
+{
+	operations.bdump_amplitudes=1;
+}
 --dump-phases
 Dump the phases
 {

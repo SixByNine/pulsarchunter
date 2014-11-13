@@ -1,6 +1,7 @@
 #include <stdio.h>
 void pch_seek_fourier_size_test_slack(int npts, int val, int *bestsize, int *bestslack){
 	int slack = npts - val;
+	if (slack < 0)slack=npts;
 	if (slack < *bestslack){
 		*bestsize=val;
 		*bestslack=slack;
@@ -11,27 +12,21 @@ int pch_seek_fourier_size(int npts, bool pow2only){
 
 	int bestslack=npts;
 	int bestsize;
-	int val;
+	int val,x,y;
 	if(!pow2only){
 		// try some things
-		// 3
-		val = 3*pch_seek_fourier_size(npts/3,true);
-		pch_seek_fourier_size_test_slack(npts,val,&bestsize,&bestslack);
-		// 3^2
-		val = 9*pch_seek_fourier_size(npts/9,true);
-		pch_seek_fourier_size_test_slack(npts,val,&bestsize,&bestslack);
-		// 3^3
-		val = 27*pch_seek_fourier_size(npts/27,true);
-		pch_seek_fourier_size_test_slack(npts,val,&bestsize,&bestslack);
-		// 3^4
-		val = 81*pch_seek_fourier_size(npts/81,true);
-		pch_seek_fourier_size_test_slack(npts,val,&bestsize,&bestslack);
-		// 3^5
-		val = 243*pch_seek_fourier_size(npts/243,true);
-		pch_seek_fourier_size_test_slack(npts,val,&bestsize,&bestslack);
-		// 3^6
-		val = 729*pch_seek_fourier_size(npts/729,true);
-		pch_seek_fourier_size_test_slack(npts,val,&bestsize,&bestslack);
+		// powers of 3
+		x=1;
+		while (x < npts){
+			y=1;
+			//powers of 5
+			while (y<npts){
+				val = y*x*pch_seek_fourier_size(npts/(x*y),true);
+				pch_seek_fourier_size_test_slack(npts,val,&bestsize,&bestslack);
+				y *= 5;
+			}
+			x*=3;
+		}
 	}
 	val = 128;
 	while ( val <= npts ){

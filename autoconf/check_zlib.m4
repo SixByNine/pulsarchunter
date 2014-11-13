@@ -81,11 +81,7 @@ else
   AC_MSG_RESULT(no)
 fi])
 
-ZLIB_HOME=/usr/local
-if test ! -f "${ZLIB_HOME}/include/zlib.h"
-then
-        ZLIB_HOME=/usr
-fi
+ZLIB_HOME=DEFAULT
 
 #
 # Locate zlib, if wanted
@@ -94,8 +90,10 @@ if test -n "${ZLIB_HOME}"
 then
         ZLIB_OLD_LDFLAGS=$LDFLAGS
         ZLIB_OLD_CPPFLAGS=$LDFLAGS
-        LDFLAGS="$LDFLAGS -L${ZLIB_HOME}/lib"
-        CPPFLAGS="$CPPFLAGS -I${ZLIB_HOME}/include"
+		if test "$ZLIB_HOME" != "DEFAULT";  then
+          LDFLAGS="$LDFLAGS -L${ZLIB_HOME}/lib"
+          CPPFLAGS="$CPPFLAGS -I${ZLIB_HOME}/include"
+		fi
         AC_LANG_SAVE
         AC_LANG_C
         AC_CHECK_LIB(z, inflateEnd, [zlib_cv_libz=yes], [zlib_cv_libz=no])

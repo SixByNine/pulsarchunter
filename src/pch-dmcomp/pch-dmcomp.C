@@ -195,5 +195,9 @@ int set_options(struct option* long_opt, int* opt_flag){
 
 void pch_dmcomp_print_usage(){
 
+	printf("-F\tSensible Fourier size\n");
+	printf("-2\tOnly power of 2\n");
+	printf("-N\tWhat DM after N DM Trials\n");
+	printf("-D\tSet DM used\n");
 }
 

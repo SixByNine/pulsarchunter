@@ -51,9 +51,9 @@ if test X$have_psrxml != Xyes; then
 	AC_ERROR("Need psrxml library to compile! Specify location with --with-psrxml-dir") 
 fi
 
-MJK_LIB_FFTW
+SWIN_LIB_FFTWf
 
-if test X$have_fftw != Xyes; then
+if test X$have_fftw3f != Xyes; then
 	AC_ERROR("Need single precision FFTW 3 library to compile (libfftw3f.a)! Specify location with --with-fftw-dir")
 fi
 

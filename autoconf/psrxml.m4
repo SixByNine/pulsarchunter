@@ -1,5 +1,5 @@
 #
-# SWIN_LIB_CPSRXML([ACTION-IF-FOUND [,ACTION-IF-NOT-FOUND]])
+# MJK_LIB_PSRXML([ACTION-IF-FOUND [,ACTION-IF-NOT-FOUND]])
 #
 # This m4 macro checks availability of the PSRXML io library
 # created by M.Keith.
@@ -27,9 +27,11 @@ AC_DEFUN([MJK_LIB_PSRXML],
   PSRXML_CFLAGS="$XML_CPP_FLAGS"
   PSRXML_LIBS="$XML_LIBS -lpsrxml $OPENSSL_LIBS"
 
-  if test x"$with_psrxml_dir" != xyes; then
-  	PSRXML_LIBS="-L$with_psrxml_dir/lib $PSRXML_LIBS"
-	PSRXML_CFLAGS="$PSRXML_CFLAGS -I$with_psrxml_dir/include"
+  if test -n "$with_psrxml_dir" ; then
+	 if test x"$with_psrxml_dir" != xyes; then
+	   PSRXML_LIBS="-L$with_psrxml_dir/libZ $PSRXML_LIBS"
+	   PSRXML_CFLAGS="$PSRXML_CFLAGS -I$with_psrxml_dir/include"
+	 fi
   fi
 
 

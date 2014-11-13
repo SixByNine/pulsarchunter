@@ -45,6 +45,18 @@ void pch_seek_dump(float* data, int len, float xscale, char* filename){
 	return;
 }
 
+void pch_seek_dump_binary(float* data, int len, float xscale, char* filename){
+	FILE* file;
+	int i;
+	file = fopen(filename,"w");
+	fwrite(&xscale,sizeof(float),1,file);
+	fwrite(&len,sizeof(int),1,file);
+	fwrite(data,sizeof(float),len,file);
+	fclose(file);
+	return;
+}
+
+
 void pch_seek_histogram(float* data, int len, int hist_bins, char* filename){
 
 	FILE* file;

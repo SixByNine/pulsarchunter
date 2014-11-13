@@ -97,6 +97,7 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 		}
 		if(operations->use_sigproc_zapfile)printf(" - Zap using '%s'\n",operations->zapfile);
 		if(operations->dump_amplitudes)printf(" - Dump amplitudes\n");
+		if(operations->bdump_amplitudes)printf(" - Dump amplitudes in binary\n");
 		if(operations->hist_amplitudes)printf(" - Histogram amplitudes\n");
 		if(operations->giant_search)printf(" - Single Pulse Search (GSearch)\n");
 		if(operations->dump_phases)printf(" - Dump phases\n");
@@ -257,6 +258,15 @@ void pch_seek_do_search(pch_seek_operations_t* operations, psrxml* header, float
 			}
 			printf("OP[END]: Dump amplitudes\n");
 		}
+		if (operations->bdump_amplitudes){
+			printf("OP[START]: Dump binary amplitudes\n");
+			for (chan=0; chan < nchan; chan++){
+				sprintf(filename,"amplitudes_ch%03d.binary",chan);
+				pch_seek_dump_binary(amplitude_spectra[chan],ncomplex, 1.0/tobs, filename);
+			}
+			printf("OP[END]: Dump binary amplitudes\n");
+		}
+
 		if (operations->dump_phases){
 			printf("OP[START]: Dump phases\n");
 			for (chan=0; chan < nchan; chan++){
@@ -630,7 +640,7 @@ bool pch_seek_sanity_check(pch_seek_operations_t* operations, psrxml* header){
 		if(!(operations->normalise_agl || operations->normalise_powerlaw || operations->normalise_median))operations->normalise_agl=1;
 	}
 
-	if (operations->dump_amplitudes || operations->dump_phases || operations->hist_amplitudes 
+	if (operations->dump_amplitudes || operations->bdump_amplitudes || operations->dump_phases || operations->hist_amplitudes 
 			|| operations->normalise_agl || operations->normalise_powerlaw || operations->normalise_median ){
 		operations->fft_input = 1;
 		operations->form_amplitudes=1;
